@@ -1,0 +1,321 @@
+<script type="text/javascript">
+
+function TGiveForm(container, callbackSuccess, parent) {
+    this.callbackSuccess = callbackSuccess;
+    this.init(container, parent);
+}
+
+TGiveForm.prototype.init = function(container, parent) {
+    this.id = uniqid();
+    this.container = container;
+    this.parent = parent;
+    this.container.hide();
+    this.container.html(sf($('#giveform-template').html(), [this.id]));
+
+    $(sf('#{0}_giveform-datepicker', [this.id])).datepicker({
+        showOn: 'button',
+        buttonText: 'Choose Date'
+    });
+    $(sf('#{0}_giveform-datepicker', [this.id])).datepicker(
+            'option', 'dateFormat', kDateFormat
+            );
+}
+
+TGiveForm.prototype.create = function() {
+    this.update();
+    this.addListeners();
+
+    $(sf('.{0}_scheduleVisible', [this.id])).hide();
+    $(sf('.{0}_giveNowVisible', [this.id])).show();
+    $(sf('#{0}_giveform-duration-text', [this.id])).html('MM');
+    $(sf('#{0}_giveform-selector', [this.id])).hide();
+    $(sf('#{0}_giveform-duration-select', [this.id])).change();
+    $(sf('#{0}_giveform-selector', [this.id])).attr('class', 'minuteBar minuteBarDown');
+    this.container.show();
+}
+
+TGiveForm.prototype.destroy = function() {
+    this.clearListeners();
+    this.container.hide();
+}
+
+TGiveForm.prototype.update = function() {
+    var jselem = this;
+    $.get('/api/user/cangive/', function(res) {
+        res = JSON.parse(res);
+        if (!res) {
+            if (jselem.parent.parent.parent.screens) {
+                jselem.parent.parent.parent.clearScreens();
+                jselem.parent.parent.parent.screens['settings'].create();
+            } else {
+                jselem.parent.parent.parent.parent.clearScreens();
+                jselem.parent.parent.parent.parent.screens['settings'].create();
+            }
+            (new TModal("Please configure your Paypal settings to make a donation",
+                    jselem)).create();
+        }
+    });
+}
+
+TGiveForm.prototype.addListeners = function() {
+    this.clearListeners();
+
+    var jselem = this;
+
+    $(sf('#{0}_giveform-form', [this.id])).submit(function() {
+
+        var form = $(this);
+
+        var now = false;
+
+        try {
+
+            // calculate start date and repeat schedule
+
+            var repeat = 'none';
+            var startDate = Date();
+
+            if ($(sf('#{0}_giveform-schedule-div', [jselem.id])).is(':visible')) {
+
+                startDate = $.datepicker.parseDate(kDateFormat,
+                        $(sf('#{0}_giveform-datepicker', [jselem.id])).val());
+                var startHour = parseInt(form.find('select[name=time_start_hour]').val());
+                if (form.find('select[name=time_start_ampm]').val() == 'p')
+                    startHour += 12;
+                startDate.setHours(startHour);
+                startDate.setMinutes(
+                        form.find('select[name=time_start_minute]').val(), 0);
+
+                repeat = form.find('input[name=repeat]:checked').val();
+
+            } else {
+                startDate = Date();
+                now = true;
+            }
+
+            startDate = dateFormat(toUTC(new Date(startDate)), 'yyyy-mm-dd HH:MM:ss');
+
+            $.post('/api/give/create/', {
+                csrfmiddlewaretoken: getCookie('csrftoken'),
+                time_start: startDate,
+                duration: form.find('select[name=duration]').val(),
+                repeat: repeat,
+                charity: form.find('input[name=charity]').val(),
+                now: now
+            }, function(res) {
+                jselem.destroy();
+                jselem.callbackSuccess(true);
+            });
+
+        } catch(e) {
+            console.log(e)
+        } finally {
+            return false;
+        }
+    });
+
+    $(sf('#{0}_giveform-schedule-link', [this.id])).click(function() {
+        $(sf('.{0}_giveNowVisible', [jselem.id])).hide();
+        $(sf('.{0}_scheduleVisible', [jselem.id])).show();
+        $(sf('#{0}_giveform-selector', [jselem.id])).attr('class', 'minuteBar minuteBarUp');
+    });
+
+    $(sf('#{0}_giveform-close-link', [this.id])).click(function() {
+        jselem.destroy();
+    });
+    $(sf('#{0}_giveform-back-link', [this.id])).click(function() {
+        if ($(sf('.{0}_scheduleVisible', [jselem.id])).is(':visible')) {
+            jselem.destroy();
+            jselem.create();
+        } else {
+            jselem.destroy();
+        }
+    });
+
+    $(sf('#{0}_giveform-duration-text', [this.id])).click(function() {
+        $(sf('#{0}_giveform-selector', [jselem.id])).toggle();
+        $(sf('#{0}_giveform-selector-table', [jselem.id])).html('');
+        $(sf('#{0}_giveform-duration-select option', [jselem.id])).each(function() {
+            $(sf('#{0}_giveform-selector-table', [jselem.id])).append(
+                sf($('#giveform-selector-elem-template').html(), [
+                    jselem.id,
+                    $(this).val(),
+                    $(this).html(),
+                    $(this).attr('selected') ? 'class="minuteBoxElemSelected"' : ''
+                ])
+            );
+            $(sf('#{0}_giveform-selector_{1}', [jselem.id, $(this).val()])).click(function() {
+                $(sf('#{0}_giveform-duration-select option:selected', [jselem.id])).removeAttr('selected');
+                $(sf('#{0}_giveform-duration-select option[value={1}]', [jselem.id, $(this).attr('tag')])).attr('selected', 'selected');
+                $(sf('#{0}_giveform-duration-select', [jselem.id])).change();
+            });
+        });
+
+    });
+
+    $(sf('#{0}_giveform-duration-select', [jselem.id])).change(function() {
+        $(sf('#{0}_giveform-duration-text', [jselem.id])).html(
+            $(sf('#{0}_giveform-duration-select option:selected', [jselem.id])).html()
+        );
+        $(sf('#{0}_giveform-selector', [jselem.id])).hide();
+    });
+
+    $(sf('#{0}_giveform-duration-up-link', [jselem.id])).click(function() {
+        if ($(sf('#{0}_giveform-duration-select option:selected', [jselem.id])).next('option').length) {
+            $(sf('#{0}_giveform-duration-select option:selected', [jselem.id])).removeAttr('selected').next('option').attr('selected', 'selected');
+            $(sf('#{0}_giveform-duration-select', [jselem.id])).change();
+        }
+    });
+    $(sf('#{0}_giveform-duration-down-link', [jselem.id])).click(function() {
+        if ($(sf('#{0}_giveform-duration-select option:selected', [jselem.id])).prev('option').length) {
+            $(sf('#{0}_giveform-duration-select option:selected', [jselem.id])).removeAttr('selected').prev('option').attr('selected', 'selected');
+            $(sf('#{0}_giveform-duration-select', [jselem.id])).change();
+        }
+    });
+    $(sf('#{0}_giveform-ampm-button', [jselem.id])).click(function() {
+        var select = $(sf('#{0}_giveform-form', [jselem.id])).find('select[name=time_start_ampm]');
+        if (select.val() == 'a') {
+            select.children('option').removeAttr('selected');
+            select.children('option[value=p]').attr('selected', 'selected');
+            $(this).html('PM');
+        } else {
+            select.children('option').removeAttr('selected');
+            select.children('option[value=a]').attr('selected', 'selected');
+            $(this).html('AM');
+        }
+    });
+}
+
+TGiveForm.prototype.clearListeners = function() {
+    $(sf('#{0}_giveform-form', [this.id])).unbind('submit');
+    $(sf('#{0}_giveform-schedule-link', [this.id])).unbind('click');
+    $(sf('#{0}_giveform-close-link', [this.id])).unbind('click');
+    $(sf('#{0}_giveform-back-link', [this.id])).unbind('click');
+    $(sf('#{0}_giveform-duration-text', [this.id])).unbind('click');
+    $(sf('#{0}_giveform-ampm-button', [this.id])).unbind('click');
+    $(sf('#{0}_giveform-duration-up-link', [this.id])).unbind('click');
+    $(sf('#{0}_giveform-duration-down-link', [this.id])).unbind('click');
+}
+
+TGiveForm.prototype.setCharity = function(charity_id, charity_name, charity_description, img_url) {
+    $(sf('#{0}_giveform-form', [this.id])).find('input[name=charity]').val(charity_id);
+    $(sf('#{0}_giveform-title', [this.id])).html(charity_name);
+    $(sf('#{0}_giveform-img', [this.id])).attr('src', img_url);
+}
+
+</script>
+
+
+<script type="text/template" id="giveform-selector-elem-template">
+<tr><td {3} id="{0}_giveform-selector_{1}" tag="{1}" style="text-align:center; padding:5px">{2}</td></tr>
+</script>
+
+<script type="text/template" id="giveform-template">
+
+<div id="{0}_giveform-div" class="giveFormDiv">
+
+    <div style="width:100%; background-image:url(/static/img/titlebar.png); background-size:100%; height:42px">
+        <table cellpadding="0" cellspacing="0"><tr>
+            <td width="20%" style="text-align:left">
+                <a href="javascript:void(0)" id="{0}_giveform-back-link"><img src="/static/img/btn-back.png" style="height:30px; padding: 6px;" /></a>
+            </td><td width="60%">
+                <img src="/static/img/minuteflower-logo-sm.svg" width="100%"/>
+            </td><td width="20%" style="text-align:right">
+                <a href="javascript:void(0)" id="{0}_giveform-close-link"><img src="/static/img/btn-close.png" style="height:30px; padding: 6px;" /></a>
+            </td>
+        </tr></table>
+    </div>
+    <br/>
+
+    <table cellpadding="0" cellspacing="0"><tr><td style="vertical-align:top; padding-right: 10px" width="60">
+        <img style="width:50px; margin: 20px; margin-top: 0px;" id="{0}_giveform-img" src="" />
+    </td><td style="padding-left:0px;">
+        <p id="{0}_giveform-title" class="formTitle"></p>
+        <p style="margin-top: 5px" class="formExplanation {0}_giveNowVisible">Give now by entering a time amount and pressing Give,
+        or schedule a future date to give by pressing 'Schedule Give'</p>
+        <p class="formExplanation {0}_scheduleVisible">Give by entering a date, time, and amount of time you wish to give and press give.</p>
+
+        <form id="{0}_giveform-form">
+
+            <div id="{0}_giveform-schedule-div" class="{0}_scheduleVisible">
+
+                <input type="text" id="{0}_giveform-datepicker" disabled="true" style="width:80px; margin-right:10px;" /><br/><br/>
+
+                <table cellpadding="0" cellspacing="0"><tr><td>
+                    <select name="time_start_hour">
+                        <option value="1">01</option>
+                        <option value="2">02</option>
+                        <option value="3">03</option>
+                        <option value="4">04</option>
+                        <option value="5">05</option>
+                        <option value="6">06</option>
+                        <option value="7">07</option>
+                        <option value="8">08</option>
+                        <option value="9">09</option>
+                        <option value="10">10</option>
+                        <option value="11">11</option>
+                        <option value="12">12</option>
+                    </select>
+                    <select name="time_start_minute">
+                        <option value="0">00</option>
+                        <option value="15">15</option>
+                        <option value="30">30</option>
+                        <option value="45">45</option>
+                    </select>
+                    <div style="display:none">
+                        <select name="time_start_ampm">
+                            <option value="a">AM</option>
+                            <option value="p">PM</option>
+                        </select>
+                    </div>
+                </td><td>
+                    <div class="giveFormDurationDiv" style="text-align:center" id="{0}_giveform-ampm-button">
+                        AM
+                    </div>
+                </td></tr></table>
+                <br/>
+
+            </div>
+
+            <div style="height:0px; width:0px; position:static">
+                <div id="{0}_giveform-selector">
+                    <table cellpadding="5" cellspacing="0" id="{0}_giveform-selector-table" width="50">
+                    </table>
+                </div>
+            </div>
+            <table cellpadding="0" cellspacing="0"><tr><td style="text-align:center">
+                <a href="javascript:void(0)" id="{0}_giveform-duration-up-link"><img src="/static/img/btn-uparrow.png" height="40"/></a><br/>
+                <div id="{0}_giveform-duration-text" class="giveFormDurationDiv"></div><span class="formExplanation">Minutes</span><br/>
+                <a href="javascript:void(0)" id="{0}_giveform-duration-down-link"><img src="/static/img/btn-downarrow.png" height="40"/></a><br/>
+                <select name="duration" id="{0}_giveform-duration-select" style="display:none">
+                    <option value="1">1</option>
+                    <option value="2">2</option>
+                    <option value="5">5</option>
+                    <option value="10">10</option>
+                    <option value="15">15</option>
+                    <option value="30">30</option>
+                    <option value="60">60</option>
+                </select>
+            </td><td style="padding-left: 20px; text-align: center">
+
+                <div id="{0}_giveform-repeat-div" style="text-align:left" class="{0}_scheduleVisible">
+                    <span class="giveExplanation">Make it:</span><br/>
+                    <input type="radio" name="repeat" value="none" checked>No repeat</input><br/>
+                    <input type="radio" name="repeat" value="day">Daily</input><br/>
+                    <input type="radio" name="repeat" value="week">Weekly</input><br/><br/>
+                </div>
+                
+                <span style="font-size:14pt" class="{0}_giveNowVisible"><br/><br/><br/></span>
+                <input type="hidden" name="charity" />
+                <input type="image" src="/static/img/btn-givenow.png" id="{0}_giveform-givenow-button" value="Give Now" height="40" class="{0}_giveNowVisible" />
+                <input type="image" src="/static/img/btn-give.png" id="{0}_giveform-setup-button" value="Set up" height="40" class="{0}_scheduleVisible"/>
+                <div id="{0}_giveform-schedule-link-div" class="{0}_giveNowVisible">
+                    <p class="formExplanation">OR</p>
+                    <a href="javascript:void(0)" id="{0}_giveform-schedule-link"><img src="/static/img/btn-givelater.png" height="40" /></a>
+                </div>
+            </td></tr></table>
+        </td></tr></table>
+    </form>
+</div>
+
+</script>

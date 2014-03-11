@@ -1,0 +1,88 @@
+<script type="text/javascript">
+
+function TGive(give_id, container, parent) {
+    this.give_id = give_id;
+    this.init(container, parent);
+}
+
+TGive.prototype.init = function(container, parent) {
+    this.id = uniqid();
+    this.container = container;
+    this.parent = parent;
+    this.container.hide();
+    this.container.html(sf($('#give-template').html(), [this.id, '', '']));
+
+    this.giveform = null;
+    this.charity_id = null;
+    this.charity_name;
+    this.charity_img;
+}
+
+TGive.prototype.create = function() {
+    this.update();
+    this.addListeners();
+    this.container.show();
+}
+
+TGive.prototype.destroy = function() {
+    this.clearListeners();
+    this.container.hide();
+}
+
+TGive.prototype.update = function() {
+    var jselem = this;
+    $.get(sf('/api/give/{0}/', [this.give_id]), function(res) {
+        res = JSON.parse(res);
+        jselem.container.html(
+            sf($('#give-template').html(), [
+                jselem.id,
+                res[0].derived.charity_name,
+                ''+res[0].derived.duration]));
+        jselem.charity_id = res[0].fields.charity;
+        jselem.charity_name = res[0].derived.charity_name;
+        jselem.charity_description = res[0].derived.charity_description;
+        jselem.charity_img = res[0].derived.charity_image;
+        jselem.addListeners();
+    });
+}
+
+TGive.prototype.addListeners = function() {
+    this.clearListeners();
+    var jselem = this;
+
+    $(sf('#{0}_give-link', [this.id])).click(function() {
+        jselem.giveform = new TGiveForm(
+            $(sf('#{0}_giveform-container', [jselem.id])),
+            function(success) {
+                new TModal('Your give has been set up', jselem).create();
+            }, jselem);
+        jselem.giveform.setCharity(
+                jselem.charity_id,
+                jselem.charity_name,
+                jselem.charity_description,
+                jselem.charity_img);
+        jselem.giveform.create();
+    });
+}
+
+TGive.prototype.clearListeners = function() {
+    $(sf('#{0}_give-link', [this.id])).unbind('click');
+}
+
+</script>
+
+
+<script type="text/template" id="give-template">
+
+<div id="{0}_give-div" class="giveDiv">
+    <table style="width:100%"><tr><td class="giveDivLeft">
+        <span id="{0}_give-name" class="giveName">{1}</span><br/>
+        <span class="giveDuration">Total time:
+            <span id="{0}_give-duration">{2}</span> minutes</span><br/>
+    </td><td class="giveDivRight>
+        <a href="javascript:void(0)" id="{0}_give-link">Give</a>
+    </td></tr></table>
+    <div id="{0}_giveform-container"></div>
+</div>
+
+</script>

@@ -1,0 +1,19 @@
+{% include 'elements/header.html' %}
+
+<p>Log in</p>
+
+{% if form.errors %}
+    <p class="error">That didn't work.<br/>Please try again.</p>
+{% endif %}
+
+<form action="" method="post">
+    {% csrf_token %}
+    <input type="text" name="username" value="" id="username" placeholder="username"><br/>
+    <input type="password" name="password" value="" id="password" placeholder="password"><br/>
+    <input type="submit" value="login" />
+    <input type="hidden" name="next" value="/" />
+</form>
+
+<p>or <a href="/register/">register</a></p>
+
+{% include 'elements/footer.html' %}

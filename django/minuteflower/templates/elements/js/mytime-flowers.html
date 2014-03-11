@@ -1,0 +1,43 @@
+<script type="text/javascript">
+
+function TMyTimeFlowers(container, parent) {
+    this.init(container, parent);
+}
+
+TMyTimeFlowers.prototype.init = function(container, parent) {
+    this.id = uniqid();
+    this.container = container;
+    this.parent = parent;
+    this.container.hide();
+    this.container.html(sf($('#mytimeflowers-template').html(), [this.id]));
+}
+
+TMyTimeFlowers.prototype.create = function() {
+    this.update();
+    this.addListeners();
+    this.container.show();
+}
+
+TMyTimeFlowers.prototype.destroy = function() {
+    this.clearListeners();
+    this.container.hide();
+}
+
+TMyTimeFlowers.prototype.update = function() {}
+
+TMyTimeFlowers.prototype.addListeners = function() {
+    this.clearListeners();
+}
+
+TMyTimeFlowers.prototype.clearListeners = function() {}
+
+</script>
+
+
+<script type="text/template" id="mytimeflowers-template">
+
+<div id="{0}_mytimeflowers-div">
+    mytimeflowers
+</div>
+
+</script>

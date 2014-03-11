@@ -1,0 +1,14 @@
+{% include 'elements/header.html' %}
+
+<div id="mf-container"></div>
+
+<script type="text/javascript">
+
+$(function() {
+    var minuteflower = new TMinuteFlower($('#mf-container'), $(document));
+    minuteflower.create();
+});
+
+</script>
+
+{% include 'elements/footer.html' %}

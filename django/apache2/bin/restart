@@ -1,0 +1,5 @@
+#!/bin/bash
+
+/home/minuteflower/webapps/django/apache2/bin/stop
+sleep 5
+/home/minuteflower/webapps/django/apache2/bin/start

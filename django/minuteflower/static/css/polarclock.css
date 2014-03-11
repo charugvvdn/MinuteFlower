@@ -1,0 +1,67 @@
+.quarter {
+    width:100px;
+    height:100px;
+    background: red;
+    border-radius: 0 100px 0 0;
+    -moz-border-radius: 0 100px 0 0;
+    -webkit-border-radius: 0 100px 0 0;
+    position:absolute;
+}
+.smallQuarter {
+    width:80px;
+    height:80px;
+    background: blue;
+    border-radius: 0 80px 0 0;
+    -moz-border-radius: 0 80px 0 0;
+    -webkit-border-radius: 0 180px 0 0;
+    position:absolute;
+    top:20px;
+}
+.coverQuarter {
+    width:105px;
+    height:105px;
+    background: green;
+    border 1px solid white;
+    border-radius: 0 102px 0 0;
+    -moz-border-radius: 0 102px 0 0;
+    -webkit-border-radius: 0 102px 0 0;
+    position:absolute;
+    transform: rotate(45deg);
+    transform-origin:0% 100%;
+    -ms-transform: rotate(45deg); /* IE 9 */
+    -ms-transform-origin:0% 100%; /* IE 9 */
+    -webkit-transform: rotate(45deg); /* Safari and Chrome */
+    -webkit-transform-origin:0% 100%; /* Safari and Chrome */
+    -moz-transform: rotate(45deg); /* Firefox */
+    -moz-transform-origin:0% 100%; /* Firefox */
+    -o-transform: rotate(45deg); /* Opera */
+    -o-transform-origin:0% 100%; /* Opera */
+    top:-5px;
+}
+.outer {
+    width:100px;
+    height:100px;
+    border: 0px solid black;
+    margin-left:5px;
+    margin-top:5px;
+}
+.square {
+    position:absolute;
+    width:100px;
+    height:100px;
+    background-color: white;
+    transform: skew(-45deg);
+    -o-transform: skew(-45deg);
+    -moz-transform: skew(-45deg);
+    -webkit-transform: skew(-45deg);
+    left:64px;
+    border: 1px solid black;
+}
+.triangle {
+     width:0;
+     height:0;
+     border-bottom:80px solid black;
+     border-left:50px solid transparent;
+     position: absolute;
+     top:20px;
+}

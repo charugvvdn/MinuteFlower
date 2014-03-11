@@ -1,0 +1,92 @@
+<script type="text/javascript">
+
+function TCharitiesCategories(container, callbackClick, parent) {
+    this.callbackClick = callbackClick;
+    this.init(container);
+}
+
+TCharitiesCategories.prototype.init = function(container, parent) {
+    this.id = uniqid();
+    this.container = container;
+    this.parent = parent;
+    this.container.hide();
+    this.container.html(sf($('#charitiescategories-template').html(), [this.id]));
+
+    this.categories = [];
+}
+
+TCharitiesCategories.prototype.create = function() {
+    this.update();
+    this.addListeners();
+    this.container.show();
+}
+
+TCharitiesCategories.prototype.destroy = function() {
+    this.clearListeners();
+    this.container.hide();
+}
+
+TCharitiesCategories.prototype.update = function() {
+    var jselem = this;
+    $.get('/api/category/', function(res) {
+        $(sf('#{0}_charitiescategories-div', [jselem.id])).html('');
+        jselem.categories = []
+        res = JSON.parse(res);
+        for (var i in res) {
+            jselem.categories.push(res[i]);
+            $(sf('#{0}_charitiescategories-div', [jselem.id])).append(
+                sf($('#category-template').html(), [
+                    jselem.id,
+                    i,
+                    res[i][0].pk,
+                    res[i][0].derived.image_url,
+                    res[i][0].fields.name
+                ])
+            );
+        }
+        jselem.addListeners();
+    });
+}
+
+TCharitiesCategories.prototype.addListeners = function() {
+    this.clearListeners();
+
+    var jselem = this;
+    for (var i in this.categories) {
+        $(sf('#{0}_category_{1}-link', [this.id, i])).click(function() {
+            jselem.callbackClick($(this).children('input[name=category_id]').val());
+        });
+    }
+}
+
+TCharitiesCategories.prototype.clearListeners = function() {
+    for (var i in this.categories) {
+        $(sf('{0}_category_{1}-link', [this.id, i])).unbind('click');
+    }
+}
+
+</script>
+
+
+<script type="text/template" id="charitiescategories-template">
+
+<div id="{0}_charitiescategories-div"></div>
+
+</script>
+
+<script type="text/template" id="category-template">
+
+<div id="{0}_category_{1}-div" class="charitiesCategoryDiv">
+    <table style="width:100%" cellpadding="6"><tr height="57">
+        <td style="width:60px; text-align:left"><img src="{3}" height="50" width="50" /></td>
+        <td><span class="categoryTitle">
+            <a href="javascript:void(0)" id="{0}_category_{1}-link">
+                <input type="hidden" name="category_id" value="{2}" />
+                {4}
+            </a>
+        </span></td>
+        <td style="width:20px"><span class="categoryTitle">&gt</span></td>
+    </table>
+</div>
+
+</script>

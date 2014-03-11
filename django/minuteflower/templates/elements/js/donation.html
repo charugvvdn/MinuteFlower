@@ -1,0 +1,83 @@
+<script type="text/javascript">
+
+function TDonation(donation, container, parent) {
+    this.donation = donation;
+    this.init(container, parent);
+}
+
+TDonation.prototype.init = function(container, parent) {
+    this.id = uniqid();
+    this.container = container;
+    this.parent = parent;
+    this.container.hide();
+    last_give = 'Never';
+    next_give = 'Not set up';
+    if (this.donation.last_give)
+        last_give = formatDate(new Date(this.donation.last_give*1000));
+    if (this.donation.next_give)
+        next_give = formatDate(new Date(this.donation.next_give*1000));
+    this.container.html(sf($('#donation-template').html(), [
+            this.id,
+            this.donation.charity[0].fields.name,
+            this.donation.total_time,
+            last_give,
+            next_give]));
+
+    this.giveform = null;
+    this.charity_name = "";
+}
+
+TDonation.prototype.create = function() {
+    this.update();
+    this.addListeners();
+    this.container.show();
+}
+
+TDonation.prototype.destroy = function() {
+    this.clearListeners();
+    this.container.hide();
+}
+
+TDonation.prototype.update = function() {}
+
+TDonation.prototype.addListeners = function() {
+    this.clearListeners();
+    var jselem = this;
+
+    $(sf('#{0}_give-link', [this.id])).click(function() {
+        jselem.giveform = new TGiveForm(
+            $(sf('#{0}_giveform-container', [jselem.id])),
+            function(success) {
+                new TModal('Your give has been set up').create();
+            }, jselem);
+        jselem.giveform.setCharity(
+                jselem.donation.charity[0].pk,
+                jselem.donation.charity[0].fields.name,
+                jselem.donation.charity[0].fields.description,
+                jselem.donation.charity[0].derived.category_image_url);
+        jselem.giveform.create();
+    });
+}
+
+TDonation.prototype.clearListeners = function() {
+    $(sf('#{0}_give-link', [this.id])).unbind('click');
+}
+
+</script>
+
+
+<script type="text/template" id="donation-template">
+
+<div id="{0}_donation-div" class="giveDiv">
+    <table style="width:100%"><tr><td class="giveDivLeft">
+        <span id="{0}_donation-name" class="giveName">{1}</span><br/>
+        <span class="giveDuration">Total time: {2} minutes</span><br/>
+        <span class="giveDuration">Last give: {3}</span><br/>
+        <span class="giveDuration">Next give: {4}</span><br/>
+    </td><td class="giveDivRight>
+        <a href="javascript:void(0)" id="{0}_give-link">Give</a>
+    </td></tr></table>
+    <div id="{0}_giveform-container"></div>
+</div>
+
+</script>

@@ -1,0 +1,100 @@
+<script type="text/javascript">
+
+function TSettingsMinuteValue(container, parent, callback) {
+    this.init(container, parent, callback);
+}
+
+TSettingsMinuteValue.prototype.init = function(container, parent, callback) {
+    this.id = uniqid();
+    this.container = container;
+    this.parent = parent;
+    this.container.hide();
+    this.container.html(sf($('#settingsminute_value-template').html(), [this.id]));
+    this.callback = callback;
+}
+
+TSettingsMinuteValue.prototype.create = function() {
+    this.update();
+    this.addListeners();
+    this.container.show();
+}
+
+TSettingsMinuteValue.prototype.destroy = function() {
+    this.clearListeners();
+    this.container.hide();
+}
+
+TSettingsMinuteValue.prototype.update = function() {}
+
+TSettingsMinuteValue.prototype.addListeners = function() {
+    this.clearListeners();
+
+    var jselem = this;
+    $(sf('#{0}_settingsminute_value-back-link', [this.id])).click(function() {
+        jselem.destroy();
+    });
+    $(sf('#{0}_settingsminute_value-close-link', [this.id])).click(function() {
+        jselem.destroy();
+    });
+    $(sf('#{0}_settingsminute_value-form', [this.id])).submit(function() {
+        console.log($(this).find('[name=minute_value]').val());
+        $.post('/api/user/settings/update/', {
+            minute_value: $(this).find('[name=minute_value]').val(),
+        }, function(res) {
+            res = JSON.parse(res);
+            if (res) {
+                (new TModal("Your minute_value was successfully changed")).create();
+            } else {
+                (new TModal("A problem occurred")).create();
+            }
+            jselem.callback();
+            jselem.destroy();
+        });
+        return false;
+    });
+}
+
+TSettingsMinuteValue.prototype.clearListeners = function() {
+    $(sf('#{0}_settingsminute_value-back-link', [this.id])).unbind('click');
+    $(sf('#{0}_settingsminute_value-close-link', [this.id])).unbind('click');
+}
+
+// --
+
+TSettingsMinuteValue.prototype.setMinuteValue = function(minute_value) {
+    $(sf('#{0}_settingsminute_value-form', [this.id])).find('[name=minute_value]').val(minute_value);
+}
+
+</script>
+
+
+<script type="text/template" id="settingsminute_value-template">
+
+<div id="{0}_settingsminute_value-div" class="changeSettingsDiv">
+    <div style="width:100%; background-image:url(/static/img/titlebar.png); background-size:100%; height:42px">
+        <table cellpadding="0" cellspacing="0"><tr>
+            <td width="20%" style="text-align:left">
+                <a href="javascript:void(0)" id="{0}_settingsminute_value-back-link"><img src="/static/img/btn-back.png" style="height:30px; padding: 6px;" /></a>
+            </td><td width="60%">
+                <img src="/static/img/minuteflower-logo-sm.svg" width="100%"/>
+            </td><td width="20%" style="text-align:right">
+                <a href="javascript:void(0)" id="{0}_settingsminute_value-close-link"><img src="/static/img/btn-close.png" style="height:30px; padding: 6px;" /></a>
+            </td>
+        </tr></table>
+    </div>
+    <br/>
+
+    <form id="{0}_settingsminute_value-form">
+        <table width="100%">
+            <tr><td class="loginInputContainer" align="center">
+                <input type="text" name="minute_value" class="loginInput" />
+            </td></tr>
+            <tr><td style="height:10px"></td></tr>
+            <tr><td class="buttonLarge" align="center">
+                <input type="submit" value="Change Minute Value" class="loginSubmit" />
+            </td></tr>
+        </table>
+    </form>
+</div>
+
+</script>

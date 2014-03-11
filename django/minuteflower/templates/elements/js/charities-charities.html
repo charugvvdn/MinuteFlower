@@ -1,0 +1,64 @@
+<script type="text/javascript">
+
+function TCharitiesCharities(category_id, container, parent) {
+    this.category_id = category_id;
+    this.init(container, parent);
+}
+
+TCharitiesCharities.prototype.init = function(container, parent) {
+    this.id = uniqid();
+    this.container = container;
+    this.parent = parent;
+    this.container.hide();
+    this.container.html(sf($('#charitiescharities-template').html(), [this.id]));
+
+    this.charities = [];
+}
+
+TCharitiesCharities.prototype.create = function() {
+    this.update();
+    this.container.show();
+}
+
+TCharitiesCharities.prototype.destroy = function() {
+    this.clearListeners();
+    this.container.hide();
+}
+
+TCharitiesCharities.prototype.update = function() {
+    var jselem = this;
+    $.get(sf('/api/category/{0}/charity/', [this.category_id]), function(res) {
+        res = JSON.parse(res);
+        jselem.charities = [];
+        for (var i in res) {
+            $(sf('#{0}_charitiescharities-div', [jselem.id])).append(
+                sf($('#charity-template').html(), [jselem.id, res[i][0].pk]));
+            var charity = new TCharitiesCharity(res[i][0].pk,
+                    $(sf('#{0}_charity_{1}-container', [jselem.id, res[i][0].pk])), this);
+            jselem.charities.push(charity);
+            charity.create()
+        }
+        jselem.addListeners();
+    });
+}
+
+TCharitiesCharities.prototype.addListeners = function() {
+    this.clearListeners();
+}
+
+TCharitiesCharities.prototype.clearListeners = function() {}
+
+</script>
+
+
+<script type="text/template" id="charitiescharities-template">
+
+<div id="{0}_charitiescharities-div"></div>
+
+</script>
+
+<script type="text/template" id="charity-template">
+
+<div id="{0}_charity_{1}-container"></div>
+
+</script>

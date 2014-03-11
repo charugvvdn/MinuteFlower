@@ -1,0 +1,101 @@
+<script type="text/javascript">
+
+function TFlowerCharity(charity_id, container, clickCallback, parent) {
+    this.charity_id = charity_id;
+    this.init(container, clickCallback, parent);
+}
+
+TFlowerCharity.prototype.init = function(container, clickCallback, parent) {
+    this.id = uniqid();
+    this.container = container;
+    this.parent = parent;
+    this.container.hide();
+    this.container.html(sf($('#flowercharity-template').html(), [this.id, '', '', '']));
+    this.giveform = null;
+    this.charity = null;
+    this.clickCallback = clickCallback;
+}
+
+TFlowerCharity.prototype.create = function() {
+    this.update();
+    this.addListeners();
+    this.container.show();
+}
+
+TFlowerCharity.prototype.destroy = function() {
+    this.clearListeners();
+    this.container.hide();
+}
+
+TFlowerCharity.prototype.update = function() {
+    var jselem = this;
+    $.get(sf('/api/charity/{0}/', [this.charity_id]), function(res) {
+        res = JSON.parse(res);
+        jselem.charity = res;
+        jselem.container.html(
+            sf($('#flowercharity-template').html(), [
+                jselem.id,
+                res[0].fields.name,
+                res[0].fields.description,
+                res[0].derived.category_image_url])
+        );
+        jselem.container.css('background-image', sf('url({0})', [
+                res[0].derived.image_url]))
+        jselem.addListeners();
+    });
+}
+
+TFlowerCharity.prototype.addListeners = function() {
+    this.clearListeners();
+    var jselem = this;
+
+    $(sf('#{0}_flowercharity-button', [this.id])).click(function() {
+        if (jselem.giveform)
+            jselem.giveform.destroy();
+        jselem.giveform = new TGiveForm(
+                $(sf('#{0}_flowercharity-giveform-container', [jselem.id])),
+                function(success) {
+                     var app = jselem.parent.parent;
+                     //app.clearScreens();
+                     //app.screens['mytime'].create();
+                     app.ticker.update();
+                }, jselem);
+        jselem.giveform.setCharity(
+                jselem.charity_id,
+                jselem.charity[0].fields.name,
+                jselem.charity[0].fields.description,
+                jselem.charity[0].derived.category_image_url);
+        jselem.giveform.create();
+    });
+    this.container.click(function() {
+        jselem.clickCallback();
+    });
+}
+
+TFlowerCharity.prototype.clearListeners = function() {
+    $(sf('#{0}_flowercharity-button', [this.id])).unbind('click');
+    this.container.unbind('click');
+}
+
+</script>
+
+
+<script type="text/template" id="flowercharity-template">
+
+<div id="{0}_flowercharity-div">
+    <div class="flowerCharityDivBox"></div>
+    <div id="{0}_flowercharity-givebox" class="flowerCharityDiv">
+        <table cellpadding="0" cellspacing="0"><tr><td style="vertical-align:top">
+            <img style="width:40px; margin: 5px" id="{0}_flowercharity-img" src="{3}" />
+        </td><td style="padding-left:10px">
+            <span class="flowerCharityName" id="{0}_flowercharity-name-text">{1}</span><br/>
+            <span class="flowerCharityDescription" id="{0}_flowercharity-description-text">{2}</span><br/>
+        </td></tr></table>
+        <div style="text-align:right; padding-top:10px">
+            <a href="javascript:void(0)" id="{0}_flowercharity-button"><img src="/static/img/btn-give.png" style="height:40px" /></a>
+        </div>
+    </div>
+    <div id="{0}_flowercharity-giveform-container"></div>
+</div>
+
+</script>

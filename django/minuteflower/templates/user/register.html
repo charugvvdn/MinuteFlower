@@ -1,0 +1,13 @@
+{% include 'elements/header.html' %}
+
+<p>Register</p>
+
+<form action="" method="post">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <input type="submit" value="Register">
+</form>
+
+<p>or <a href="/login/">log in</a></p>
+
+{% include 'elements/footer.html' %}

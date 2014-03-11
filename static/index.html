@@ -1,0 +1,55 @@
+<script type="text/javascript" src="/static/js/lib/jquery-1.7.2.js"></script>
+<script type="text/javascript" src="/static/js/lib/date.format.js"></script>
+<script type="text/javascript" src="/static/js/lib/jquery-ui-1.8.18.custom.min.js"></script>
+<script type="text/javascript" src="/static/js/global.js"></script>
+<script type="text/javascript" src="/static/js/util.js"></script>
+<script type="text/javascript" src="/static/js/api.js"></script>
+
+<div id="mf-container"></div>
+
+<script>
+
+$(function() {
+    var minuteflower = new TApp($('#mf-container'));
+    minuteflower.create();
+});
+</script>
+
+
+<script type="text/javascript">
+
+function TApp(container) {
+    this.init(container);
+}
+
+TApp.prototype.init = function(container) {
+    var jselem = this;
+    this.id = 2;
+    this.container = container;
+    this.container.hide();
+    this.container.html('hi');
+    console.log(strformat('{0}', [1]));
+    console.log('{0}'.format(1));
+    this.container.html(''+$('#app-template').html().format(jselem.id));
+    console.log($('#2_app-div').attr('id'));
+    console.log($(this.container.children()[0]).attr('id'));
+}
+
+TApp.prototype.create = function() {
+    this.container.show();
+}
+
+TApp.prototype.destroy = function() {
+    //this.container.hide();
+}
+
+TApp.prototype.update = function() {}
+
+</script>
+
+<script type="text/template" id="app-template">
+
+<div id="{0}_app-div">
+</div>
+
+</script>

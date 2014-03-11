@@ -1,0 +1,100 @@
+<script type="text/javascript">
+
+function TSettingsSalary(container, parent, callback) {
+    this.init(container, parent, callback);
+}
+
+TSettingsSalary.prototype.init = function(container, parent, callback) {
+    this.id = uniqid();
+    this.container = container;
+    this.parent = parent;
+    this.container.hide();
+    this.container.html(sf($('#settingssalary-template').html(), [this.id]));
+    this.callback = callback;
+}
+
+TSettingsSalary.prototype.create = function() {
+    this.update();
+    this.addListeners();
+    this.container.show();
+}
+
+TSettingsSalary.prototype.destroy = function() {
+    this.clearListeners();
+    this.container.hide();
+}
+
+TSettingsSalary.prototype.update = function() {}
+
+TSettingsSalary.prototype.addListeners = function() {
+    this.clearListeners();
+
+    var jselem = this;
+    $(sf('#{0}_settingssalary-back-link', [this.id])).click(function() {
+        jselem.destroy();
+    });
+    $(sf('#{0}_settingssalary-close-link', [this.id])).click(function() {
+        jselem.destroy();
+    });
+    $(sf('#{0}_settingssalary-form', [this.id])).submit(function() {
+        console.log($(this).find('[name=salary]').val());
+        $.post('/api/user/settings/update/', {
+            salary: $(this).find('[name=salary]').val(),
+        }, function(res) {
+            res = JSON.parse(res);
+            if (res) {
+                (new TModal("Your salary was successfully changed")).create();
+            } else {
+                (new TModal("A problem occurred")).create();
+            }
+            jselem.callback();
+            jselem.destroy();
+        });
+        return false;
+    });
+}
+
+TSettingsSalary.prototype.clearListeners = function() {
+    $(sf('#{0}_settingssalary-back-link', [this.id])).unbind('click');
+    $(sf('#{0}_settingssalary-close-link', [this.id])).unbind('click');
+}
+
+// --
+
+TSettingsSalary.prototype.setSalary = function(salary) {
+    $(sf('#{0}_settingssalary-form', [this.id])).find('[name=salary]').val(salary);
+}
+
+</script>
+
+
+<script type="text/template" id="settingssalary-template">
+
+<div id="{0}_settingssalary-div" class="changeSettingsDiv">
+    <div style="width:100%; background-image:url(/static/img/titlebar.png); background-size:100%; height:42px">
+        <table cellpadding="0" cellspacing="0"><tr>
+            <td width="20%" style="text-align:left">
+                <a href="javascript:void(0)" id="{0}_settingssalary-back-link"><img src="/static/img/btn-back.png" style="height:30px; padding: 6px;" /></a>
+            </td><td width="60%">
+                <img src="/static/img/minuteflower-logo-sm.svg" width="100%"/>
+            </td><td width="20%" style="text-align:right">
+                <a href="javascript:void(0)" id="{0}_settingssalary-close-link"><img src="/static/img/btn-close.png" style="height:30px; padding: 6px;" /></a>
+            </td>
+        </tr></table>
+    </div>
+    <br/>
+
+    <form id="{0}_settingssalary-form">
+        <table width="100%">
+            <tr><td class="loginInputContainer" align="center">
+                <input type="text" name="salary" class="loginInput" />
+            </td></tr>
+            <tr><td style="height:10px"></td></tr>
+            <tr><td class="buttonLarge" align="center">
+                <input type="submit" value="Change Salary" class="loginSubmit" />
+            </td></tr>
+        </table>
+    </form>
+</div>
+
+</script>

@@ -1,0 +1,508 @@
+/*
+    Colours
+    -------
+    MinuteFlower Green      #b2c735
+    MinuteFlower Brown      #654518
+    MinuteFlower Red        #d47f59
+*/
+
+
+/* working ============================================================================ */
+
+.charities_logo {
+    width: 40px;
+    height: 40px;
+}
+
+/* final ============================================================================== */
+
+.polarClock {
+    position: absolute;
+    top: 0px;
+    left: 0px;
+}
+
+.settingsTable tr td {
+    height: 40px;
+    font-family: Arial;
+}
+
+.settingsTable {
+    width: 100%;
+}
+
+.settingsKey {
+    font-weight: bold;
+    float: left;
+}
+
+.settingsVal {
+    font-style: italic;
+    text-align: right;
+    float: right;
+}
+
+.changeSettingsDiv {
+    position: absolute;
+    top: 0px;
+    left: 0px;
+    width: 100%;
+    height: 100%;
+    background-color: #EBF1C0;
+}
+
+.giveFormDurationDiv {
+    font-size: 18pt;
+    background-color: #fff;
+    width: 50px;
+    border-radius: 5px;
+    padding: 5px;
+    margin: 3px;
+    font-family: Arial;
+    font-weight: bold;
+    color: #b2c735;
+}
+
+.minuteBoxElemSelected {
+    background-color: #b2c735;
+    color: #fff !important;
+}
+
+.minuteBar {
+    background-size: 100%;
+    width: 80px;
+    height: 240px;
+    padding-left: 5px;
+    padding-top: 9px;
+    font-family: Arial;
+}
+
+.minuteBarUp {
+    position: relative;
+    left: -90px;
+    top: -115px;
+    background-image: url('/static/img/minutebar-up.png');
+}
+
+.minuteBarDown {
+    position: relative;
+    left: -90px;
+    top: 15px;
+    background-image: url('/static/img/minutebar.png');
+}
+
+.minuteBar table tr td {
+    font-weight: bold;
+    font-size: 14pt;
+    color: #b2c735;
+}
+
+.rawlink {
+    color: #fff;
+    font-weight: bold;
+    text-shadow: 0.1em 0.1em #666;
+    text-decoration: none;
+}
+
+.formTitle {
+    color: #d47f59;
+    font-weight: bold;
+    font-family: Arial;
+    font-size: 16pt;
+    margin-bottom: 0px;
+}
+.formExplanation {
+    color: #654518;
+    font-weight: bold;
+    font-family: Arial;
+    font-size: 10pt;
+}
+
+body {
+    width: 100%;
+    height: 100%;   
+    background-color: transparent;
+    margin: 0px;
+    border: 0px;
+    padding: 0px;
+    text-align: center;
+}
+.topNavBar {
+    width: 100%;
+    height: 54px;
+    border-spacing: 0px;
+    border-width: 0px;
+}
+.topNavBar tr {
+    background-color: #b4c434;
+}
+.topNavBar tr td {
+    width: 20%;
+    height: 54px;
+    padding-bottom: 4px;
+    background-repeat: no-repeat;
+    text-align: center;
+    vertical-align: bottom;
+    font-family: Arial;
+    font-size: 11px;
+    font-weight: bold;
+}
+.topNavBar tr td a {
+    padding-top: 30px;
+    color: #fff;
+    text-decoration: none;
+}
+
+.myTimeNavBar {
+    width: 100%;
+    height: 30px;
+}
+.myTimeNavBar tr {
+    background-color: #b4c434;
+}
+.myTimeNavBar tr td {
+    width: 30%;
+    height: 30px;
+    font-family: Arial;
+    font-size: 11px;
+    font-weight: bold;
+    text-align: center;
+}
+.myTimeNavBar tr td a {
+    padding-top: 30px;
+    color: #fff;
+    text-decoration: none;
+}
+
+.giveDiv {
+    padding: 10px;
+    text-align: left;
+}
+.giveDivRight {
+    width: 80px;
+}
+.giveName {
+    font-family: Arial;
+    font-size: 15px;
+    text-align: left;
+}
+.giveDuration {
+    font-family: Arial;
+    font-size: 11px;
+    text-align: left;
+}
+
+.charitiesCharityDiv {
+    width: 100%;
+    text-align: left;
+}
+.charityTitle {
+    font-family: Arial, "Trebuchet MS";
+    font-size: 22px;
+    font-weight: bold;
+    color: #B87333;
+}
+.charityTitle a {
+    color: #B87333;
+    text-decoration: none;
+}
+.charitiesCategoryDiv {
+    width: 100%;
+    text-align: left;
+}
+.categoryTitle {
+    font-family: Arial, "Trebuchet MS";
+    font-size: 22px;
+    font-weight: bold;
+    color: #B87333;
+}
+.categoryTitle a {
+    color: #B87333;
+    text-decoration: none;
+}
+
+
+.loginDiv {
+    height: 460px;
+    background-image: url("/static/img/login_signup_bg.png");
+    background-size: 100%;
+    background-position: 0px 0px;
+    background-repeat: no-repeat;
+    padding-bottom: 20px;
+}
+
+#password_sent_msg {
+    height: 40px;
+    width: 180px;
+    padding: 0;
+    margin: 0;
+    border: 0;
+    color: #8E2323;
+    font-family: Arial, "Trebuchet MS";
+    font-size: 14px;
+    font-weight: bold;
+    text-align: center;
+}
+
+.screenContainer {
+    width: 320px;
+    height: 400px;
+    background-size: 100%;
+    background-repeat: no-repeat;   
+    border: none;
+}
+
+.flowerCharityDivBox {
+    position: absolute;
+    top: 240px;
+    left: 70px;
+    width: 230px;
+    height: 120px;
+    border: none;
+    background: rgba(101,69,24,0.85);
+    padding: 10px;
+}
+
+.flowerCharityDiv {
+    position: absolute;
+    top: 240px;
+    left: 70px;
+    width: 230px;
+    border: none;
+    padding: 10px;
+    text-align: left;
+}
+
+.flowerCharityName {
+    color: #d47f59;
+    font-weight: bold;
+    font-family: Arial;
+    font-size: 12pt;
+    text-align: left;
+}
+.flowerCharityDescription {
+    color: #ddd;
+    font-weight: bold;
+    font-family: Arial;
+    font-size: 10pt;
+    text-align: left;
+}
+
+.giveFormDiv {
+    position: absolute;
+    top: 0px;
+    left: 0px;
+    width: 320px;
+    height: 480px;
+    border: 1px solid black;
+    background: rgb(235,241,192);
+    z-index: 100;
+    padding: none;
+}
+
+.totaltimeDiv {
+    width: 100%;
+    height: 80px;
+    font-size: 50px;
+}
+
+.perGiveTimeDiv {
+    width: 100%;
+    height: 30px;
+    font-size: 25px;
+}
+
+.modalDiv {
+    position: absolute;
+    top: 200px;
+    left: 20px;
+    width: 230px;
+    border: 1px solid black;
+    background: #b2c735;
+    padding: 20px;
+    z-index: 1;
+}
+
+.menuMyTime {
+    background-image: url("/static/img/n-time-icon.svg");
+    border-right: 1px solid #fff;
+    background-size: 42%;
+    background-position: center 7px;    
+}
+.menuCharities {
+    background-image: url("/static/img/n-charity-icon.svg");
+    background-position: center 6px;
+    background-size: 49%;
+}
+.menuFlower {
+    position: relative;
+    height: 0px;
+    width: 0px;
+    top: -65px; 
+    left: 123px;
+}
+.menuFlowerContainer {
+    width: 76px;
+    height: 76px;
+}
+.menuFriends {
+    background-image: url("/static/img/n-friends-icon.svg");
+    background-size: 60%;
+    background-position: 15px 10px;
+    border-right: 1px solid #fff;
+}
+.menuSettings {
+    background-image: url("/static/img/n-settings-icon.svg");
+    background-size: 60%;
+    background-position: center 9px;
+}
+.button_login {
+    background-image: url("/static/img/btn-grn-wide.svg");
+    -webkit-background-size: 100% 100%;
+    background-repeat: no-repeat;
+    margin: -webkit-auto;
+    padding: 20px 50px;
+    color: #fff;
+    font-family: Arial, "Trebuchet MS";
+    font-size: 18px;
+    font-weight: bold;
+}
+.button_login_fb {
+    background-image: url("/static/img/btn-facebook.png");
+    background-repeat: no-repeat;
+    background-position: center;
+    margin: -webkit-auto;
+    padding: 25px 0px 25px 46px;
+    color: #fff;
+    font-family: Arial, "Trebuchet MS";
+    font-size: 16px;
+    font-weight: bold;
+}
+.button_login_fb a {
+    text-decoration: none;
+    font-family: Arial, "Trebuchet MS";
+    font-size: 18px;
+    font-weight: bold;  
+    color: #fff;
+}
+.buttonLarge {
+    background-image: url("/static/img/btn-grn-wide.png");
+    background-repeat: no-repeat;
+    background-position: center;
+    margin: -webkit-auto;
+    padding: 20px 50px;
+}
+.buttonLarge a {
+    color: #fff;
+    text-decoration: none;
+    font-family: Arial, "Trebuchet MS";
+    font-size: 18px;
+    font-weight: bold;  
+}
+.loginInputContainer {
+    background-image: url("/static/img/tf-bg-wide2.svg");
+    -webkit-background-size: 100% 100%;
+    background-repeat: no-repeat;
+    margin: -webkit-auto;
+    padding: 0px 0px;
+    color: #e8e8e8;
+    font-family: Arial, "Trebuchet MS";
+    font-size: 14px;
+}
+.loginInput {
+    color: rgb(232, 232, 232);
+    background-color: rgb(180, 196, 53);
+    width: 230px;
+    padding: 8px 5px;
+    margin: 0;
+    border: 0;
+    color: #fff;
+    font-family: Arial, "Trebuchet MS";
+    font-size: 18px;
+}
+.loginSubmit {
+    color: rgb(232, 232, 232);
+    background: transparent;
+    border: none;
+    width: 150px;
+    padding: none;
+    margin: 0px;
+    color: #fff;
+    font-family: Arial, "Trebuchet MS";
+    font-size: 18px;
+}
+::-webkit-input-placeholder {
+    color: #eee;
+}
+::-moz-placeholder {
+    color: #eee;
+}
+.forgot_password {
+    padding: 0;
+    margin: 0;
+    border: 0;
+    color: #fff;
+    font-family: Arial, "Trebuchet MS";
+    font-size: 12px;
+    font-weight: bold;
+}
+
+/* main screens */
+
+#teach_for_america_give {
+    background: #fff;
+    border: 1px solid #000;
+    position: absolute; 
+    top: 340px; 
+    left: 148px; 
+    height: 80px; 
+    width: 156px;
+    font-family: Arial, "Trebuchet MS";
+    font-size: 12px;
+    font-weight: bold;      
+}
+
+#teach_for_america_give_modes {
+    display: none;
+    background: #fff;
+    border: 1px solid #000;
+    position: absolute; 
+    top: 130px; 
+    left: 30px; 
+    height: 300px; 
+    width: 280px;
+    font-family: Arial, "Trebuchet MS";
+    font-size: 18px;
+    font-weight: bold;      
+}
+
+#teach_for_america_give_schedule {
+    display: none;
+    background: #fff;
+    border: 1px solid #000;
+    position: absolute; 
+    top: 130px; 
+    left: 30px; 
+    height: 300px; 
+    width: 280px;
+    font-family: Arial, "Trebuchet MS";
+    font-size: 18px;
+    font-weight: bold;      
+}
+
+#teach_for_america_give_done {
+    display: none;
+    background: #fff;
+    border: 1px solid #000;
+    position: absolute; 
+    top: 130px; 
+    left: 30px; 
+    height: 300px; 
+    width: 280px;
+    font-family: Arial, "Trebuchet MS";
+    font-size: 18px;
+    font-weight: bold;      
+}
+
+
+

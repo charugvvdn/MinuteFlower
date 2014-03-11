@@ -1,0 +1,176 @@
+<script type="text/javascript">
+
+function TSettings(container, parent) {
+    this.init(container, parent);
+}
+
+TSettings.prototype.init = function(container, parent) {
+    this.id = uniqid();
+    this.container = container;
+    this.parent = parent;
+    this.container.hide();
+    this.container.html(sf($('#settings-template').html(), [this.id]));
+
+    var jselem = this;
+    this.password = new TPassword($(sf('#{0}_settings-password-container', [this.id])), this);
+    this.salary = new TSettingsSalary($(sf('#{0}_settings-salary-container', [this.id])), this, function() {
+        jselem.update();
+    });
+    this.paypal = new TSettingsPaypal($(sf('#{0}_settings-paypal-container', [this.id])), this, function() {
+        jselem.update();
+    });
+    this.email = new TSettingsEmail($(sf('#{0}_settings-email-container', [this.id])), this, function() {
+        jselem.update();
+    });
+    this.minute_value = new TSettingsMinuteValue($(sf('#{0}_settings-minute_value-container', [this.id])), this, function() {
+        jselem.update();
+    });
+}
+
+TSettings.prototype.create = function() {
+    this.update();
+    this.addListeners();
+    this.container.show();
+}
+
+TSettings.prototype.destroy = function() {
+    this.clearListeners();
+    this.container.hide();
+}
+
+TSettings.prototype.update = function() {
+    $(sf('#{0}_settings-setpaypal-div', [this.id])).hide();
+    $(sf('#{0}_settings-getpreapproval-div', [this.id])).hide();
+    $(sf('#{0}_settings-preapprovalok-div', [this.id])).hide();
+    var jselem = this;
+    $.get('/api/user/settings/', function(res) {
+        res = JSON.parse(res);
+        $(sf('#{0}_settings-pp_email', [jselem.id])).html(res['pp_email'].substr(0,4) + '...');
+        $(sf('#{0}_settings-username', [jselem.id])).html(res['username']);
+        $(sf('#{0}_settings-email', [jselem.id])).html(res['email'].substr(0,4) + '...');
+        $(sf('#{0}_settings-salary', [jselem.id])).html('$ ' + res['salary']);
+        $(sf('#{0}_settings-minute_value', [jselem.id])).html('$ ' + res['minute_value']);
+        if (res['pp_preapproval_url']) {
+            $(sf('#{0}_settings-getpreapproval-link', [jselem.id])).attr('href', res['pp_preapproval_url']);
+        }
+        $(sf('#{0}_settings-preapprovalok-div', [jselem.id])).hide();
+        if (res['pp_preapproval_key_approved'] || res['pp_email'].length == 0) {
+            $(sf('#{0}_settings-getpreapproval-div', [jselem.id])).hide();
+            if (res['pp_preapproval_key_approved']) {
+                $(sf('#{0}_settings-preapprovalok-div', [jselem.id])).show();
+            } else {
+                $(sf('#{0}_settings-setpaypal-div', [jselem.id])).show();
+            }
+        } else {
+            $(sf('#{0}_settings-getpreapproval-div', [jselem.id])).show();
+        }
+        jselem.salary.setSalary(res['salary']);
+        jselem.email.setEmail(res['email']);
+        jselem.paypal.setPaypal(res['pp_email']);
+    });
+}
+
+TSettings.prototype.addListeners = function() {
+    this.clearListeners();
+    var jselem = this;
+    $(sf('#{0}_settings-password-link', [this.id])).click(function() {
+        jselem.password.create();
+    });
+    $(sf('#{0}_settings-salary-link', [this.id])).click(function() {
+        jselem.salary.create();
+    });
+    $(sf('#{0}_settings-minute_value-link', [this.id])).click(function() {
+        jselem.minute_value.create();
+    });
+    $(sf('#{0}_settings-paypal-link', [this.id])).click(function() {
+        jselem.paypal.create();
+    });
+    $(sf('#{0}_settings-email-link', [this.id])).click(function() {
+        jselem.email.create();
+    });
+    $(sf('#{0}_settings-logout-link', [this.id])).click(function() {
+        $.get('/api/logout/', function(res) {
+            res = JSON.parse(res);
+            if (res) {
+                jselem.parent.parent.destroy();
+                jselem.parent.parent.create();
+            }
+        });
+    });
+}
+
+TSettings.prototype.clearListeners = function() {
+    $(sf('#{0}_settings-password-link', [this.id])).unbind('click');
+    $(sf('#{0}_settings-salary-link', [this.id])).unbind('click');
+    $(sf('#{0}_settings-minute_value-link', [this.id])).unbind('click');
+    $(sf('#{0}_settings-paypal-link', [this.id])).unbind('click');
+    $(sf('#{0}_settings-email-link', [this.id])).unbind('click');
+    $(sf('#{0}_settings-logout-link', [this.id])).unbind('click');
+}
+
+</script>
+
+
+<script type="text/template" id="settings-template">
+
+<div id="{0}_settings-div" style="padding:20px">
+    <table class="settingsTable" cellpadding="0" cellspacing="0">
+    <tr><td>
+        <div class="settingsKey">Username</div>
+        <div class="settingsVal" id="{0}_settings-username"></div>
+    </td></tr>
+    <tr><td>
+        <div class="settingsKey">Email</div>
+        <div class="settingsVal" id="{0}_settings-email"></div>
+    </td><td style="padding-left:10px">
+        <a href="javascript:void(0)" id="{0}_settings-email-link">E</a>
+    </td></tr>
+    <tr><td>
+        <div class="settingsKey">Password</div>
+        <div class="settingsVal">&bull;&bull;&bull;&bull;&bull;&bull;&bull;&bull;&bull;</div>
+    </td><td style="padding-left:10px">
+        <a href="javascript:void(0)" id="{0}_settings-password-link">E</a>
+    </td></tr>
+    <tr><td>
+        <div class="settingsKey">PayPal Account</div>
+        <div class="settingsVal" id="{0}_settings-pp_email"></div>
+    </td><td style="padding-left:10px">
+        <a href="javascript:void(0)" id="{0}_settings-paypal-link">E</a>
+    </td></tr>
+    <tr><td>
+        <div class="settingsKey">Annual Salary</div>
+        <div class="settingsVal" id="{0}_settings-salary" style="font-style:normal"></div>
+    </td><td style="padding-left:10px">
+        <a href="javascript:void(0)" id="{0}_settings-salary-link">E</a>
+    </td></tr>
+    <tr><td>
+        <div class="settingsKey">Minute Value</div>
+        <div class="settingsVal" id="{0}_settings-minute_value" style="font-style:normal"></div>
+    </td><td style="padding-left:10px">
+        <a href="javascript:void(0)" id="{0}_settings-minute_value-link">E</a>
+    </td></tr>
+    <tr><td>
+        <div class="settingsVal" id="{0}_settings-salary" style="font-style:normal">
+            <a href="javascript:void(0)" id="{0}_settings-logout-link">Log out</a>
+        </div>
+    </td></tr>
+    </table>
+    <div id="{0}_settings-getpreapproval-div">
+        You haven't approved payments yet. <a id="{0}_settings-getpreapproval-link" href="">Click here</a> to get one.
+    </div>
+    <br/>
+    <div id="{0}_settings-preapprovalok-div">
+        Your preapproved payment is active.
+    </div>
+    <br/>
+    <div id="{0}_settings-setpaypal-div">
+        Please set your paypal address.
+    </div>
+    <div id="{0}_settings-password-container"></div>
+    <div id="{0}_settings-salary-container"></div>
+    <div id="{0}_settings-paypal-container"></div>
+    <div id="{0}_settings-email-container"></div>
+    <div id="{0}_settings-minute_value-container"></div>
+</div>
+
+</script>

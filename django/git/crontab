@@ -1,0 +1,2 @@
+14,34,54 * * * * ~/webapps/django/apache2/bin/start
+*/15 * * * * cd ~/minuteflower/ && python manage.py create_transactions && python manage.py perform_payments

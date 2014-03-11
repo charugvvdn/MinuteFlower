@@ -1,0 +1,115 @@
+<script type="text/javascript">
+
+function TApp(container, parent) {
+    this.init(container, parent);
+}
+
+TApp.prototype.init = function(container, parent) {
+    this.id = uniqid();
+    this.container = container;
+    this.parent = parent;
+    this.container.hide();
+    this.container.html(sf($('#app-template').html(), [this.id]));
+
+    this.screens = {
+        mytime: new TMyTime($(sf('#{0}_app-mytime-div', [this.id])), this),
+        charities: new TCharities($(sf('#{0}_app-charities-div', [this.id])), this),
+        flower: new TFlower($(sf('#{0}_app-flower-div', [this.id])), this),
+        friends: new TFriends($(sf('#{0}_app-friends-div', [this.id])), this),
+        settings: new TSettings($(sf('#{0}_app-settings-div', [this.id])), this)
+    };
+    this.ticker = new TTicker($(sf('#{0}_app-ticker-container', [this.id])), this);
+}
+
+TApp.prototype.create = function() {
+    this.update();
+    this.addListeners();
+    this.clearScreens();
+    this.screens['flower'].create();
+    this.ticker.create();
+    this.container.show();
+}
+
+TApp.prototype.destroy = function() {
+    for (var i in this.screens) {
+        this.screens[i].destroy();
+    }
+    this.clearListeners();
+    this.container.hide();
+}
+
+TApp.prototype.update = function() {}
+
+TApp.prototype.addListeners = function() {
+    this.clearListeners();
+    var jselem = this;
+    $(sf('#{0}_app-my_time-link', [this.id])).click(function() {
+        jselem.clearScreens();
+        jselem.screens['mytime'].create();
+    });
+    $(sf('#{0}_app-charities-link', [this.id])).click(function() {
+        jselem.clearScreens();
+        jselem.screens['charities'].create();
+    });
+    $(sf('#{0}_app-flower-link', [this.id])).click(function() {
+        jselem.clearScreens();
+        jselem.screens['flower'].create();
+    });
+    $(sf('#{0}_app-friends-link', [this.id])).click(function() {
+        jselem.clearScreens();
+        jselem.screens['friends'].create();
+    });
+    $(sf('#{0}_app-settings-link', [this.id])).click(function() {
+        jselem.clearScreens();
+        jselem.screens['settings'].create();
+    });
+}
+
+TApp.prototype.clearListeners = function() {
+    $(sf('#{0}_app-my_time-link', [this.id])).unbind('click');
+    $(sf('#{0}_app-charities-link', [this.id])).unbind('click');
+    $(sf('#{0}_app-flower-link', [this.id])).unbind('click');
+    $(sf('#{0}_app-friends-link', [this.id])).unbind('click');
+    $(sf('#{0}_app-settings-link', [this.id])).unbind('click');
+}
+
+// ---
+
+TApp.prototype.clearScreens = function() {
+    for (var screen in this.screens) {
+        this.screens[screen].destroy();
+    }
+}
+
+</script>
+
+<script type="text/template" id="app-template">
+
+<div id="{0}_app-div" style="text-align:left">
+    <img src="/static/img/minuteflower-logo-sm.svg" width="150"/>
+    <div id="{0}_app-ticker-container"></div>
+
+    <table id="{0}_app-header-div" class="topNavBar">
+        <tr>
+            <td class="menuMyTime"><a href="javascript:void(0)" id="{0}_app-my_time-link">My Time</a></td>
+            <td class="menuCharities"><a href="javascript:void(0)" id="{0}_app-charities-link">Charities</a></td>
+            <td class="menuFlower"></td>
+            <td class="menuFriends"><a href="javascript:void(0)" id="{0}_app-friends-link">Friends</a></td>
+            <td class="menuSettings"><a href="javascript:void(0)" id="{0}_app-settings-link">Settings</a></td>
+        </tr>
+    </table>
+    <div class="menuFlower">
+        <div class="menuFlowerContainer">
+            <a href="javascript:void(0)" id="{0}_app-flower-link"><img src="/static/img/n-flower.svg" height="100%" /></a>
+        </div>
+    </div>
+    <div id="{0}_app-screens-div">
+        <div id="{0}_app-mytime-div" class="screenContainer"></div>
+        <div id="{0}_app-charities-div" class="screenContainer"></div>
+        <div id="{0}_app-flower-div" class="screenContainer"></div>
+        <div id="{0}_app-friends-div" class="screenContainer"></div>
+        <div id="{0}_app-settings-div" class="screenContainer"></div>
+    </div>
+</div>
+
+</script>

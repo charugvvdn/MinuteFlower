@@ -1,0 +1,114 @@
+<script type="text/javascript">
+
+function TTicker(container, parent) {
+    this.init(container, parent);
+}
+
+TTicker.prototype.init = function(container, parent) {
+    this.id = uniqid();
+    this.container = container;
+    this.parent = parent;
+    this.container.hide();
+    this.container.html(sf($('#ticker-template').html(), [this.id]));
+    this.ticker = [0, 0, 0, 0];
+    this.ongoingGives = [];
+    this.timers = [];
+
+}
+
+TTicker.prototype.create = function() {
+    this.update();
+    this.addListeners();
+}
+
+TTicker.prototype.destroy = function() {
+    this.clearListeners();
+    this.container.hide();
+}
+
+TTicker.prototype.update = function() {
+    var jselem = this;
+
+    $.get('/api/give/timestatus/nowonly/', function(res) {
+        res = JSON.parse(res);
+        $(sf('#{0}_ticker-totaltime-span', [jselem.id])).html(
+                sf('{0}:{1}.0', [res.minutes, res.seconds]));
+        jselem.ticker = [parseInt(res.hours), parseInt(res.minutes), parseInt(res.seconds), 0];
+        jselem.ongoingGives = [];
+        for (var i in res.cur_gives)
+            jselem.ongoingGives.push(parseInt(res.cur_gives[i]));
+        jselem.clearTimers();
+        jselem.addTimers();
+        if (jselem.ongoingGives.length > 0)
+            jselem.container.show();
+        else
+            jselem.destroy();
+    });
+}
+
+TTicker.prototype.addListeners = function() {
+    this.clearListeners();
+}
+
+TTicker.prototype.clearListeners = function() {}
+
+TTicker.prototype.clearTimers = function() {
+    for (var i in this.timers)
+        clearTimeout(this.timers[i]);
+    this.timers = [];
+}
+
+TTicker.prototype.addTimers = function() {
+    var jselem = this;
+    for (var i in this.ongoingGives) {
+        var t = setInterval(function() {
+            for (var i in jselem.ongoingGives) {
+                jselem.ongoingGives[i] -= 1;
+                if (jselem.ongoingGives[i] <= 0 && jselem.ticker[2] == 0 && jselem.ticker[3] == 0) {
+                    jselem.ongoingGives.splice(i, 1);
+                    clearTimeout(jselem.timers[i]);
+                    jselem.timers.splice(i, 1);
+                    (new TModal("Your give is complete. Thanks for your time!")).create();
+                    jselem.destroy();
+                    return;
+                }
+            }
+            for (i = 0; i < 4; ++i)
+                jselem.ticker[i] = parseInt(jselem.ticker[i], 10);
+            jselem.ticker[3]++;
+            if (jselem.ticker[3] >= 10) {
+                jselem.ticker[3] -= 10;
+                jselem.ticker[2] += 1;
+            }
+            if (jselem.ticker[2] >= 60) {
+                jselem.ticker[2] -= 60;
+                jselem.ticker[1] += 1;
+            }
+            if (jselem.ticker[1] >= 60) {
+                jselem.ticker[1] -= 60;
+                jselem.ticker[0] += 1;
+            }
+            ticker = [];
+            for (var i in jselem.ticker)
+                ticker[i] = jselem.ticker[i];
+            for (var i = 0; i < 3; ++i)
+                ticker[i] = ("0"+ticker[i]).substr(-2);
+            $(sf('#{0}_ticker-totaltime-span', [jselem.id])).html(
+                    sf('{0}:{1}.{2}', [ticker[1], ticker[2], ticker[3]]));
+        }, 100, jselem);
+        jselem.timers.push(t);
+    }
+}
+
+</script>
+
+
+<script type="text/template" id="ticker-template">
+
+<div id="{0}_ticker-div" style="position:absolute; top:5px; right:10px">
+    <div class="perGiveTimeDiv" style="text-align:center">
+        <span id="{0}_ticker-totaltime-span"></span>
+    </div>
+</div>
+
+</script>

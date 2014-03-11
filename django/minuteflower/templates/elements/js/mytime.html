@@ -1,0 +1,183 @@
+<script type="text/javascript">
+
+function TMyTime(container, parent) {
+    this.init(container, parent);
+}
+
+TMyTime.prototype.init = function(container, parent) {
+    this.id = uniqid();
+    this.container = container;
+    this.parent = parent;
+    this.container.hide();
+    this.container.html(sf($('#mytime-template').html(), [this.id]));
+    this.mytime = [0, 0, 0];
+    this.ongoingGives = [];
+    this.timers = [];
+
+    this.mytimedonations = new TMyTimeDonations(
+        $(sf('#{0}_mytime-donations-container', [this.id])), this);
+    this.mytimecauses = new TMyTimeCauses(
+        $(sf('#{0}_mytime-causes-container', [this.id])), this);
+    this.mytimeflowers = new TMyTimeFlowers(
+        $(sf('#{0}_mytime-flowers-container', [this.id])), this);
+}
+
+TMyTime.prototype.create = function() {
+    this.update();
+    this.addListeners();
+    this.addTimers();
+    this.container.show();
+
+    this.clearScreens();
+    this.mytimedonations.create();
+}
+
+TMyTime.prototype.destroy = function() {
+    this.clearTimers();
+    this.clearListeners();
+    this.container.hide();
+}
+
+TMyTime.prototype.update = function() {
+    var jselem = this;
+
+    $.get('/api/give/timestatus/', function(res) {
+        res = JSON.parse(res);
+        jselem.mytime = [parseInt(res.hours), parseInt(res.minutes), parseInt(res.seconds)];
+        jselem.ongoingGives = [];
+        for (var i in res.cur_gives)
+            jselem.ongoingGives.push(parseInt(res.cur_gives[i]));
+        jselem.clearTimers();
+        jselem.addTimers();
+        $.get('/api/give/mycauses/', function(res) {
+            res = JSON.parse(res);
+            var maxTime = 0;
+            for (var i in res)
+                maxTime = Math.max(maxTime, res[i].total_time);
+            for (var i in res) {
+                var div = $('<div class="polarClock"></div>');
+                div.offset({
+                    top: 110 + 5*parseInt(i),
+                    left: 112 + 5*parseInt(i)
+                });
+                var deg = 1;
+                if (res[i].total_time > 0)
+                    deg = 360 / 1.618 * res[i].total_time / maxTime;
+                div.polarClock({
+                    radius:  50 - 5*parseInt(i, 10),
+                    inner_radius: 50 - 5*parseInt(i, 10) - 5,
+                    color: res[i].color,
+                    bg_color: '#fff',
+                    duration: 1500,
+                    degrees: deg,
+                    immediate: true
+                });
+                $(sf('#{0}_mytime-polarclock', [jselem.id])).append(div);
+            }
+        });
+    });
+
+    if (this.mytimedonations.container.is(':visible'))
+        this.mytimedonations.update();
+    if (this.mytimecauses.container.is(':visible'))
+        this.mytimecauses.update();
+    if (this.mytimeflowers.container.is(':visible'))
+        this.mytimeflowers.update();
+}
+
+TMyTime.prototype.addListeners = function() {
+    this.clearListeners();
+
+    var jselem = this;
+
+    $(sf('#{0}_mytime-donations-link', [this.id])).click(function() {
+        jselem.clearScreens()
+        jselem.mytimedonations.create();
+    });
+    $(sf('#{0}_mytime-causes-link', [this.id])).click(function() {
+        jselem.clearScreens()
+        jselem.mytimecauses.create();
+    });
+    $(sf('#{0}_mytime-flowers-link', [this.id])).click(function() {
+        jselem.clearScreens()
+        jselem.mytimeflowers.create();
+    });
+}
+
+TMyTime.prototype.clearListeners = function() {}
+
+TMyTime.prototype.clearScreens = function() {
+    this.mytimedonations.destroy();
+    this.mytimecauses.destroy();
+    this.mytimeflowers.destroy();
+}
+
+TMyTime.prototype.clearTimers = function() {
+    for (var i in this.timers)
+        clearTimeout(this.timers[i]);
+    this.timers = [];
+}
+
+TMyTime.prototype.addTimers = function() {
+    var jselem = this;
+    for (var i in this.ongoingGives) {
+        var t = setInterval(function() {
+            for (var i in jselem.ongoingGives) {
+                jselem.ongoingGives[i] -= 1;
+                if (jselem.ongoingGives[i] <= 0 && jselem.mytime[2] == 59) {
+                    jselem.ongoingGives.splice(i, 1);
+                    clearTimeout(jselem.timers[i]);
+                    jselem.timers.splice(i, 1);
+                    (new TModal("Your give is complete. Thanks for your time!")).create();
+                }
+            }
+            for (i = 0; i < 3; ++i)
+                jselem.mytime[i] = parseInt(jselem.mytime[i], 10);
+            jselem.mytime[2]++;
+            if (jselem.mytime[2] >= 60) {
+                jselem.mytime[2] -= 60;
+                jselem.mytime[1] += 1;
+            }
+            if (jselem.mytime[1] >= 60) {
+                jselem.mytime[1] -= 60;
+                jselem.mytime[0] += 1;
+            }
+            mytime = [];
+            for (var i in jselem.mytime)
+                mytime[i] = jselem.mytime[i];
+            for (var i in mytime)
+                mytime[i] = ("0"+mytime[i]).substr(-2);
+        }, 1000, jselem);
+        jselem.timers.push(t);
+    }
+}
+
+</script>
+
+
+<script type="text/template" id="mytime-template">
+
+<div id="{0}_mytime-div">
+    <br/><br/><br/><br/><br/><br/><br/>
+    <div id="{0}_mytime-polarclock" class="polarClock"></div>
+    <table class="myTimeNavBar">
+        <tr>
+            <td>
+                <a href="javascript:void(0)" id="{0}_mytime-donations-link">Donations</a>
+            </td>
+            <td>
+                <a href="javascript:void(0)" id="{0}_mytime-causes-link">Causes</a>
+            </td>
+            <td>
+                <a href="javascript:void(0)" id="{0}_mytime-flowers-link">Flowers</a>
+            </td>
+        </tr>
+    </table>
+    <div id="{0}_mytime-screens-div">
+        <div id="{0}_mytime-donations-container"></div>
+        <div id="{0}_mytime-causes-container"></div>
+        <div id="{0}_mytime-flowers-container"></div>
+    </div>
+</div>
+
+</script>

@@ -1,0 +1,115 @@
+<script type="text/javascript">
+
+function TFlower(container, parent) {
+    this.init(container, parent);
+}
+
+TFlower.prototype.init = function(container, parent) {
+    this.id = uniqid();
+    this.container = container;
+    this.parent = parent;
+    this.container.hide();
+    this.container.html(sf($('#flower-template').html(), [this.id]));
+
+    this.charities = [];
+    this.selectedCharity = 0;
+}
+
+TFlower.prototype.create = function() {
+    this.update();
+    this.container.show();
+    $(sf('#{0}_flower-navarrows-div', [this.id])).hide();
+}
+
+TFlower.prototype.destroy = function() {
+    this.clearListeners();
+    this.container.hide();
+}
+
+TFlower.prototype.update = function() {
+    var jselem = this;
+    $.get('/api/charity/', function(res) {
+        res = JSON.parse(res);
+        jselem.charities = [];
+        $(sf('#{0}_flower-charities-container', [jselem.id])).html('');
+        for (var i in res) {
+            // create flower charity
+            $(sf('#{0}_flower-charities-container', [jselem.id])).append(
+                    sf($('#flowercharity-container-template').html(), [jselem.id, res[i][0].pk])
+                    );
+            jselem.charities.push(new TFlowerCharity(
+                    res[i][0].pk,
+                    $(sf('#{0}_flower-charity_{1}-container', [jselem.id, res[i][0].pk]))
+            , function() {
+                $(sf('#{0}_flower-navarrows-div', [jselem.id])).toggle();
+            }, jselem));
+        }
+        if (jselem.charities.length > 0) {
+            jselem.charities[0].create();    // TODO: randomise
+            jselem.selectedCharity = 0;
+        }
+        jselem.addListeners();
+    });
+}
+
+TFlower.prototype.addListeners = function() {
+    this.clearListeners();
+    var jselem = this;
+
+    $(sf('#{0}_flower-next-link', [this.id])).click(function() {
+        console.log(jselem.selectedCharity);
+        if (jselem.selectedCharity < jselem.charities.length - 1) {
+            jselem.clearFlowerCharities();
+            jselem.charities[jselem.selectedCharity+1].create();
+            jselem.selectedCharity += 1;
+        }
+    });
+    $(sf('#{0}_flower-prev-link', [this.id])).click(function() {
+        console.log(jselem.selectedCharity);
+        if (jselem.selectedCharity > 0) {
+            jselem.clearFlowerCharities();
+            jselem.charities[jselem.selectedCharity-1].create();
+            jselem.selectedCharity -= 1;
+        }
+    });
+}
+
+TFlower.prototype.clearListeners = function() {
+    $(sf('#{0}_flower-next-link', [this.id])).unbind('click');
+    $(sf('#{0}_flower-prev-link', [this.id])).unbind('click');
+}
+
+TFlower.prototype.clearFlowerCharities = function() {
+    for (var i in this.charities) {
+        this.charities[i].destroy();
+    }
+}
+
+</script>
+
+
+<script type="text/template" id="flower-template">
+
+<div id="{0}_flower-div" class="screenContainer">
+    <div id="{0}_flower-charities-container"></div>
+    <div id="{0}_flower-navarrows-div">
+        <div style="position:absolute; left:0px; top: 180px;">
+            <a href="javascript:void(0)" id="{0}_flower-prev-link" style="display:block; padding:20px">
+                <img src="/static/img/btn-leftarrow.png" width="25" />
+            </a>
+        </div>
+        <div style="position:absolute; left:250px; top: 180px;">
+            <a href="javascript:void(0)" id="{0}_flower-next-link" style="display:block; padding:20px">
+                <img src="/static/img/btn-rightarrow.png" width="25" />
+            </a>
+        </div>
+    </div>
+</div>
+
+</script>
+
+<script type="text/template" id="flowercharity-container-template">
+
+<div id="{0}_flower-charity_{1}-container" class="screenContainer"></div>
+
+</script>

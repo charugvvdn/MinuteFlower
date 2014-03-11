@@ -1,0 +1,66 @@
+<script type="text/javascript">
+
+function TCharities(container, parent) {
+    this.init(container, parent);
+}
+
+TCharities.prototype.init = function(container, parent) {
+    this.id = uniqid();
+    this.container = container;
+    this.parent = parent;
+    this.container.hide();
+    this.container.html(sf($('#charities-template').html(), [this.id]));
+
+    var jselem = this;
+    this.charities = new TCharitiesCharities(
+            0,
+            $(sf('#{0}_charities-charities-container', [this.id])), this);
+    this.categories = new TCharitiesCategories(
+            $(sf('#{0}_charities-categories-container', [this.id])),
+            function(category_id) {
+                jselem.clearScreens();
+                jselem.charities = new TCharitiesCharities(
+                        category_id,
+                        $(sf('#{0}_charities-charities-container', [jselem.id])), jselem);
+                jselem.charities.create();
+            }, this);
+}
+
+TCharities.prototype.create = function() {
+    this.update();
+    this.addListeners();
+    this.container.show();
+
+    this.clearScreens();
+    this.categories.create();
+}
+
+TCharities.prototype.destroy = function() {
+    this.clearListeners();
+    this.container.hide();
+}
+
+TCharities.prototype.update = function() {}
+
+TCharities.prototype.addListeners = function() {
+    this.clearListeners();
+}
+
+TCharities.prototype.clearListeners = function() {}
+
+TCharities.prototype.clearScreens = function() {
+    this.categories.destroy();
+    this.charities.destroy();
+}
+
+</script>
+
+
+<script type="text/template" id="charities-template">
+
+<div id="{0}_charities-div">
+    <div id="{0}_charities-categories-container"></div>
+    <div id="{0}_charities-charities-container"></div>
+</div>
+
+</script>

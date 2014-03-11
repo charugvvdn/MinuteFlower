@@ -1,0 +1,64 @@
+<script type="text/javascript">
+
+function TMyTimeDonations(container, parent) {
+    this.init(container, parent);
+}
+
+TMyTimeDonations.prototype.init = function(container, parent) {
+    this.id = uniqid();
+    this.container = container;
+    this.parent = parent;
+    this.container.hide();
+    this.container.html(sf($('#mytime_donations-template').html(), [this.id]));
+
+    this.gives = [];
+}
+
+TMyTimeDonations.prototype.create = function() {
+    this.update();
+    this.addListeners();
+    this.container.show();
+}
+
+TMyTimeDonations.prototype.destroy = function() {
+    this.clearListeners();
+    this.container.hide();
+}
+
+TMyTimeDonations.prototype.update = function() {
+    var jselem = this;
+    $.get('/api/give/mydonations/', function(res) {
+        res = JSON.parse(res);
+        $(sf('#{0}_mytime_donations-div', [this.id])).html();
+        for (var i in res) {
+            $(sf('#{0}_mytime_donations-div', [jselem.id])).append(
+                    sf($('#give-container-template').html(), [jselem.id, i]));
+            var donation = new TDonation(
+                    res[i],
+                    $(sf('#{0}_give_{1}-container', [jselem.id, i])), jselem);
+            jselem.gives.push(donation);
+            donation.create();
+        }
+    });
+}
+
+TMyTimeDonations.prototype.addListeners = function() {
+    this.clearListeners();
+}
+
+TMyTimeDonations.prototype.clearListeners = function() {}
+
+</script>
+
+
+<script type="text/template" id="mytime_donations-template">
+
+<div id="{0}_mytime_donations-div"></div>
+
+</script>
+
+<script type="text/template" id="give-container-template">
+
+<div id="{0}_give_{1}-container"></div>
+
+</script>

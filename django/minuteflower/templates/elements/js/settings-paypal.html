@@ -1,0 +1,100 @@
+<script type="text/javascript">
+
+function TSettingsPaypal(container, parent, callback) {
+    this.init(container, parent, callback);
+}
+
+TSettingsPaypal.prototype.init = function(container, parent, callback) {
+    this.id = uniqid();
+    this.container = container;
+    this.parent = parent;
+    this.container.hide();
+    this.container.html(sf($('#settingspaypal-template').html(), [this.id]));
+    this.callback = callback;
+}
+
+TSettingsPaypal.prototype.create = function() {
+    this.update();
+    this.addListeners();
+    this.container.show();
+}
+
+TSettingsPaypal.prototype.destroy = function() {
+    this.clearListeners();
+    this.container.hide();
+}
+
+TSettingsPaypal.prototype.update = function() {}
+
+TSettingsPaypal.prototype.addListeners = function() {
+    this.clearListeners();
+
+    var jselem = this;
+    $(sf('#{0}_settingspaypal-back-link', [this.id])).click(function() {
+        jselem.destroy();
+    });
+    $(sf('#{0}_settingspaypal-close-link', [this.id])).click(function() {
+        jselem.destroy();
+    });
+    $(sf('#{0}_settingspaypal-form', [this.id])).submit(function() {
+        console.log($(this).find('[name=paypal]').val());
+        $.post('/api/user/settings/update/', {
+            pp_email: $(this).find('[name=pp_email]').val(),
+        }, function(res) {
+            res = JSON.parse(res);
+            if (res) {
+                (new TModal("Your Paypal email was successfully changed")).create();
+            } else {
+                (new TModal("A problem occurred")).create();
+            }
+            jselem.callback();
+            jselem.destroy();
+        });
+        return false;
+    });
+}
+
+TSettingsPaypal.prototype.clearListeners = function() {
+    $(sf('#{0}_settingspaypal-back-link', [this.id])).unbind('click');
+    $(sf('#{0}_settingspaypal-close-link', [this.id])).unbind('click');
+}
+
+// --
+
+TSettingsPaypal.prototype.setPaypal = function(paypal) {
+    $(sf('#{0}_settingspaypal-form', [this.id])).find('[name=pp_email]').val(paypal);
+}
+
+</script>
+
+
+<script type="text/template" id="settingspaypal-template">
+
+<div id="{0}_settingspaypal-div" class="changeSettingsDiv">
+    <div style="width:100%; background-image:url(/static/img/titlebar.png); background-size:100%; height:42px">
+        <table cellpadding="0" cellspacing="0"><tr>
+            <td width="20%" style="text-align:left">
+                <a href="javascript:void(0)" id="{0}_settingspaypal-back-link"><img src="/static/img/btn-back.png" style="height:30px; padding: 6px;" /></a>
+            </td><td width="60%">
+                <img src="/static/img/minuteflower-logo-sm.svg" width="100%"/>
+            </td><td width="20%" style="text-align:right">
+                <a href="javascript:void(0)" id="{0}_settingspaypal-close-link"><img src="/static/img/btn-close.png" style="height:30px; padding: 6px;" /></a>
+            </td>
+        </tr></table>
+    </div>
+    <br/>
+
+    <form id="{0}_settingspaypal-form">
+        <table width="100%">
+            <tr><td class="loginInputContainer" align="center">
+                <input type="text" name="pp_email" class="loginInput" />
+            </td></tr>
+            <tr><td style="height:10px"></td></tr>
+            <tr><td class="buttonLarge" align="center">
+                <input type="submit" value="Change Paypal Email" class="loginSubmit" />
+            </td></tr>
+        </table>
+    </form>
+</div>
+
+</script>

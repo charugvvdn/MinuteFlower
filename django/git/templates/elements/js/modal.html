@@ -1,0 +1,53 @@
+<script type="text/javascript">
+
+function TModal(message, parent) {
+    this.message = message;
+    this.init($(sf('#{0}', [kModalDivId])), parent);
+}
+
+TModal.prototype.init = function(container, parent) {
+    this.id = uniqid();
+    this.container = container;
+    this.parent = parent;
+    this.container.hide();
+    this.container.html(sf($('#modal-template').html(), [this.id, this.message]));
+}
+
+TModal.prototype.create = function() {
+    this.update();
+    this.addListeners();
+    this.container.show();
+}
+
+TModal.prototype.destroy = function() {
+    this.clearListeners();
+    this.container.hide();
+}
+
+TModal.prototype.update = function() {}
+
+TModal.prototype.addListeners = function() {
+    this.clearListeners();
+
+    var jselem = this;
+    $(sf('#{0}_modal-ok-link', [this.id])).click(function() {
+        jselem.destroy();
+    });
+}
+
+TModal.prototype.clearListeners = function() {
+    $(sf('#{0}_modal-ok-link', [this.id])).unbind('click');
+}
+
+</script>
+
+
+<script type="text/template" id="modal-template">
+
+<div id="{0}_modal-div" class="modalDiv">
+    {1}
+    <br/><br/>
+    <a href="javascript:void(0)" id="{0}_modal-ok-link">OK</a>
+</div>
+
+</script>

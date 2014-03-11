@@ -1,0 +1,63 @@
+<script type="text/javascript">
+
+function TMinuteFlower(container, parent) {
+    this.init(container, parent);
+}
+
+TMinuteFlower.prototype.init = function(container, parent) {
+    this.id = uniqid();
+    this.container = container;
+    this.parent = parent;
+    this.container.hide();
+    this.container.html(sf($('#minuteflower-template').html(), [this.id]));
+    this.app = new TApp(
+            $(sf('#{0}_minuteflower-app-container', [this.id])), this);
+    var jselem = this;
+    this.login = new TLogin(
+            $(sf('#{0}_minuteflower-login-container', [this.id])),
+            function() { jselem.login.destroy(); jselem.app.create(); } , this);
+    this.logged_in = false;
+}
+
+TMinuteFlower.prototype.create = function() {
+    this.update();
+    this.addListeners();
+    this.container.show();
+}
+
+TMinuteFlower.prototype.destroy = function() {
+    this.app.destroy();
+    this.login.destroy();
+    this.clearListeners();
+    this.container.hide();
+}
+
+TMinuteFlower.prototype.update = function() {
+    var jselem = this;
+    $.get('/api/user/loggedin/', function(res) {
+        res = JSON.parse(res);
+        jselem.logged_in = res ? true : false;
+        if (jselem.logged_in)
+            jselem.app.create();
+        else
+            jselem.login.create();
+    });
+}
+
+TMinuteFlower.prototype.addListeners = function() {
+    this.clearListeners();
+}
+
+TMinuteFlower.prototype.clearListeners = function() {}
+
+</script>
+
+
+<script type="text/template" id="minuteflower-template">
+
+<div id="{0}_minuteflower-div">
+    <div id="{0}_minuteflower-app-container"></div>
+    <div id="{0}_minuteflower-login-container"></div>
+</div>
+
+</script>
