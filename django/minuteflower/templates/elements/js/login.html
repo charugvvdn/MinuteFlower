@@ -81,7 +81,11 @@ TLogin.prototype.addListeners = function() {
         });
         return false;
     });
-    $(sf('#{0}_forgot-password-form', [this.id])).submit(function() {
+    $(sf('#{0}_forgot-password-form', [this.id])).submit(function() {	
+
+	
+	$(sf("#loading",[this.id])).show();
+	$(":submit").attr("disabled", true);
         var form = this;
         $.post('/api/user/forgotpassword/', {
             csrfmiddlewaretoken: getCookie('csrftoken'),
@@ -89,12 +93,16 @@ TLogin.prototype.addListeners = function() {
             
         }, function(res) {
             res = JSON.parse(res);
+	    $(sf("#loading",[this.id])).hide();
             if (res)
             {
                 jselem.clearScreens();
+		
                 $(sf('#check_newpass',[this.id])).show();
+
             }
             else {
+		$(":submit").removeAttr("disabled");
                 (new TModal('Please try again', jselem)).create()
             }
             $(form).find('input[type!=submit]').val('');
@@ -108,6 +116,8 @@ TLogin.prototype.addListeners = function() {
             csrfmiddlewaretoken: getCookie('csrftoken'),
             username: $(this).find('input[name=username]').val(),
             email: $(this).find('input[name=email]').val(),
+	    first_name: $(this).find('input[name=first_name]').val(),
+	    last_name: $(this).find('input[name=last_name]').val(),
             password1: $(this).find('input[name=password1]').val(),
             password2: $(this).find('input[name=password2]').val()
         }, function(res) {
@@ -146,6 +156,7 @@ TLogin.prototype.clearScreens = function() {
     $(sf('#{0}_login-signin-div', [this.id])).hide();
     $(sf('#{0}_forgot-password-div',[this.id])).hide();
     $(sf('#check_newpass',[this.id])).hide();
+    $(sf('#loading',[this.id])).hide();
 }
 
 </script>
@@ -154,7 +165,9 @@ TLogin.prototype.clearScreens = function() {
 <script type="text/template" id="login-template">
 
 <div id="{0}_login-div" class="loginDiv">
+    <div id="loading"> <p>Loading.... please wait! </p> </div>
     <div id='check_newpass'>
+
         <p> Please check the email id to
             <a href='javascript:void(0)' id='{0}_login-signin4-link'> Sign in </a>
         with new password</p>
@@ -217,19 +230,27 @@ TLogin.prototype.clearScreens = function() {
                 <tr><td class="loginInputContainer" align="center">
                     <input type="text" name="username" placeholder="username" class="loginInput" />
                 </td></tr>
-                <tr><td style="height:10px"></td></tr>
+                <tr><td style="height:5px"></td></tr>
                 <tr><td class="loginInputContainer" align="center">
                     <input type="text" name="email" placeholder="email" class="loginInput" />
                 </td></tr>
-                <tr><td style="height:10px"></td></tr>
+                <tr><td style="height:5px"></td></tr>
+		<tr><td class="loginInputContainer" align="center">
+                    <input type="text" name="first_name" placeholder="first name" class="loginInput" />
+                </td></tr>
+                <tr><td style="height:5px"></td></tr>
+		<tr><td class="loginInputContainer" align="center">
+                    <input type="text" name="last_name" placeholder="last name" class="loginInput" />
+                </td></tr>
+                <tr><td style="height:5px"></td></tr>
                 <tr><td class="loginInputContainer" align="center">
                     <input type="password" name="password1" placeholder="password" class="loginInput" />
                 </td></tr>
-                <tr><td style="height:10px"></td></tr>
+                <tr><td style="height:5px"></td></tr>
                 <tr><td class="loginInputContainer" align="center">
                     <input type="password" name="password2" placeholder="confirm password" class="loginInput" />
                 </td></tr>
-                <tr><td style="height:10px"></td></tr>
+                <tr><td style="height:5px"></td></tr>
                 <tr>
                     <td align="center" class="buttonLarge" id="{0}_login-register-td">
                         <input type="submit" value="register" class="loginSubmit" />

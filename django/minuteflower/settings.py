@@ -5,8 +5,8 @@ import decimal
 EMAIL_USE_TLS = True
 EMAIL_HOST = 'smtp.gmail.com'
 EMAIL_PORT = 587
-EMAIL_HOST_USER = 'charu.gangal@vvdntech.com'
-EMAIL_HOST_PASSWORD = '######'
+EMAIL_HOST_USER = 'arvind.patidar@vvdntech.com'
+EMAIL_HOST_PASSWORD = 'arvind123'
 
 DEBUG = True
 TEMPLATE_DEBUG = DEBUG

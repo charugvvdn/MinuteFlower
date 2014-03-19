@@ -35,14 +35,16 @@ class ForgotPasswordForm(forms.Form):
             profile = User.objects.get(email = cd['email'].lower())
             s=string.lowercase+string.digits
             new_pass = ''.join(random.sample(s,10))
-            profile.set_password(md5.md5(new_pass).hexdigest())
+            profile.set_password(new_pass)
             profile.save()
+	    print profile
             if profile:
                 connection = mail.get_connection()    
                 connection.open()
+		print "yes"
                 email = mail.EmailMessage('Minuteflower:New password', 'Hi! Your new Minuteflower password is: '+str(new_pass),'admin@mailinator.com',[cd['email']],connection=connection)
                 email.content_subtype = "html"
-                email.send(fail_silently=False)
+                print email.send(fail_silently=False)
                 connection.close()
                 return True
             
