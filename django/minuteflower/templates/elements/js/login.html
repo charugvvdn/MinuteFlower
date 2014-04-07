@@ -60,10 +60,7 @@ TLogin.prototype.addListeners = function() {
         jselem.clearScreens();
         $(sf('#{0}_login-signin-div', [jselem.id])).show();
     });
-    $(sf('#{0}_forgot-password-link', [this.id])).click(function() {
-        jselem.clearScreens();
-        $(sf('#{0}_forgot-password-div', [jselem.id])).show();
-    });
+    
     $(sf('#{0}_login-signin-form', [this.id])).submit(function() {
         var form = this;
         $.post('/api/login/', {
@@ -81,34 +78,7 @@ TLogin.prototype.addListeners = function() {
         });
         return false;
     });
-    $(sf('#{0}_forgot-password-form', [this.id])).submit(function() {	
-
-	
-	$(sf("#loading",[this.id])).show();
-	$(":submit").attr("disabled", true);
-        var form = this;
-        $.post('/api/user/forgotpassword/', {
-            csrfmiddlewaretoken: getCookie('csrftoken'),
-            email: $(this).find('input[name=email]').val(),
-            
-        }, function(res) {
-            res = JSON.parse(res);
-	    $(sf("#loading",[this.id])).hide();
-            if (res)
-            {
-                jselem.clearScreens();
-		
-                $(sf('#check_newpass',[this.id])).show();
-
-            }
-            else {
-		$(":submit").removeAttr("disabled");
-                (new TModal('Please try again', jselem)).create()
-            }
-            $(form).find('input[type!=submit]').val('');
-        });
-        return false;
-    });
+    
     
     $(sf('#{0}_login-signup-form', [this.id])).submit(function() {
         var form = this;
@@ -154,8 +124,6 @@ TLogin.prototype.clearScreens = function() {
     $(sf('#{0}_login-options-div', [this.id])).hide();
     $(sf('#{0}_login-signup-div', [this.id])).hide();
     $(sf('#{0}_login-signin-div', [this.id])).hide();
-    $(sf('#{0}_forgot-password-div',[this.id])).hide();
-    $(sf('#check_newpass',[this.id])).hide();
     $(sf('#loading',[this.id])).hide();
 }
 
@@ -165,13 +133,8 @@ TLogin.prototype.clearScreens = function() {
 <script type="text/template" id="login-template">
 
 <div id="{0}_login-div" class="loginDiv">
-    <div id="loading"> <p>Loading.... please wait! </p> </div>
-    <div id='check_newpass'>
-
-        <p> Please check the email id to
-            <a href='javascript:void(0)' id='{0}_login-signin4-link'> Sign in </a>
-        with new password</p>
-    </div>
+    <div id="loading"> <p>Please wait... </p> </div>
+    
     <div id="{0}_login-options-div">
         <div style="padding: 60px 0px 90px 0px">
             <img src="/static/img/minuteflower-logo-sm.svg"/>
@@ -218,7 +181,7 @@ TLogin.prototype.clearScreens = function() {
                 </tr>
             </table>
         </form>
-        <a href = "javascript:void(0)" id="{0}_forgot-password-link" class="rawlink">Forgot password</a>
+        <a href = "/api/password/reset/" id="{0}_forgot-password-link" class="rawlink">Forgot password</a>
         <a href="javascript:void(0)" id="{0}_login-signup2-link" class="rawlink">Sign up</a>
     </div>
     <div id="{0}_login-signup-div">
@@ -261,28 +224,7 @@ TLogin.prototype.clearScreens = function() {
         
         <a href="javascript:void(0)" id="{0}_login-signin2-link" class="rawlink">Sign in</a>
     </div>
-    <div id="{0}_forgot-password-div">
-        <div style="padding: 60px 0px 20px 0px">
-            <img src="/static/img/minuteflower-logo-sm.svg"/>
-        </div>
-        <form id="{0}_forgot-password-form">
-            <table cellspacing="0" cellpadding="0" width="100%">
-                <tr><td class="emailInputContainer" align="center">
-                    <input type="text" name="email" placeholder="example@example.com" class="emailInput" />
-                </td></tr>
-                <tr><td style="height:10px"></td></tr>
-                
-                <tr>
-                    <td align="center" class="buttonLarge" id="{0}_forgot-password-td">
-                        <input type="submit" value="New password" class="loginSubmit" />
-                    </td>
-                </tr>
-            </table>
-        </form>
-        <br/>
-        <a href="javascript:void(0)" id="{0}_login-signup3-link" class="rawlink">Sign up</a>
-        <a href="javascript:void(0)" id="{0}_login-signin3-link" class="rawlink">Sign in</a>
-    </div>
+    
 </div>
 
 </script>

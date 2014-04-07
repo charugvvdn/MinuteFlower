@@ -7,6 +7,7 @@ from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth import authenticate, login, logout
 from django.conf import settings
 from django.contrib.auth.decorators import login_required
+from django.shortcuts import render_to_response
 
 from reportlab.pdfgen import canvas
 
@@ -19,12 +20,49 @@ from minuteflower.api import JSONify
 from minuteflower.userprofile.forms import *
 from minuteflower.mfpaypal import paypal_preapproval
 
+
 logger = logging.getLogger('mf.api')
 
 def can_give(request):
     return JSONify(request.user.get_profile().can_give())
 
-
+def password_reset(request, is_admin_site=False,
+                   template_name='registration/password_reset_form.html',
+                   email_template_name='registration/password_reset_email.html',
+                   password_reset_form=PasswordResetForm,
+                   token_generator=default_token_generator,
+                   post_reset_redirect=None,
+                   from_email=None,
+                   current_app=None,
+                   extra_context=None):
+    if post_reset_redirect is None:
+        post_reset_redirect = reverse('django.contrib.auth.views.password_reset_done')
+    if request.method == "POST":
+        form = password_reset_form(request.POST)
+        if form.is_valid():
+            opts = {
+                'use_https': request.is_secure(),
+                'token_generator': token_generator,
+                'from_email': from_email,
+                'email_template_name': email_template_name,
+                'request': request,
+            }
+            if is_admin_site:
+                opts = dict(opts, domain_override=request.META['HTTP_HOST'])
+            form.save(**opts)
+            #return HttpResponseRedirect(post_reset_redirect)
+	    return HttpResponse(True)
+	else:
+		if form.errors:
+			return HttpResponse(False)
+    else:
+        form = password_reset_form()
+    context = {
+        'form': form,
+    }
+    context.update(extra_context or {})
+    return render_to_response(template_name, context,
+                              context_instance=RequestContext(request, current_app=current_app))
 #@login_require
 def api_change_password(request):
     try:
@@ -39,24 +77,6 @@ def api_change_password(request):
         print str(e)
         return JSONify(False)
     return JSONify(False)
-def api_forgot_password(request):
-    if request.method == 'POST':
-        try:
-            form = ForgotPasswordForm(request.POST)
-            
-            if form.is_valid():
-                
-                return JSONify(form.send_newpass(request))
-            else:
-                print form.errors
-                return JSONify(False)
-            
-        except Exception, e:
-            print str(e)
-            return JSONify(False)
-    else:
-        return JSONify(False)
-    
 
 def api_loggedin(request):
     return JSONify(request.user.is_authenticated())
@@ -96,6 +116,8 @@ def update_settings(request):
     form = UpdateSettingsForm(request.POST)
     if form.is_valid():
         return JSONify(form.save(request))
+    else:
+	 print form.errors
     return JSONify(False)
 
 

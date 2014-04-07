@@ -36,14 +36,13 @@ urlpatterns = patterns('',
     url(r'^api/login/$', minuteflower.userprofile.views.api_login),
     url(r'^api/register/$', minuteflower.userprofile.views.api_register),
     url(r'^api/logout/$', minuteflower.userprofile.views.api_logout),
-
+    
     url(r'^api/user/password/$', minuteflower.userprofile.views.api_change_password),
-    url(r'^api/user/forgotpassword/$', minuteflower.userprofile.views.api_forgot_password),
     url(r'^api/user/settings/update/$', minuteflower.userprofile.views.update_settings),
     url(r'^api/user/settings/$', minuteflower.userprofile.views.api_get_settings),
     url(r'^api/user/loggedin/$', minuteflower.userprofile.views.logged_in),
     url(r'^api/user/cangive/$', minuteflower.userprofile.views.can_give),
-
+	
     url(r'^login/$',  django.contrib.auth.views.login, {'template_name':'user/login.html'}),
     url(r'^login/facebook/$',  minuteflower.views.render_static, {'template_name':'facebook_login.html'}),
     url(r'^logout/$', django.contrib.auth.views.logout, {'template_name':'user/logout.html'}),
@@ -53,4 +52,16 @@ urlpatterns = patterns('',
 
     url(r'^admin/doc/', include('django.contrib.admindocs.urls')),
     url(r'^admin/', include(admin.site.urls)),
+
+     url(r'^api/password/reset/$', 
+        minuteflower.userprofile.views.password_reset, 
+        {'post_reset_redirect' : '/api/password/reset/done/'},
+        name="password_reset"),
+    (r'^api/password/reset/done/$',
+        'django.contrib.auth.views.password_reset_done'),
+    (r'^api/password/reset/(?P<uidb36>[0-9A-Za-z]+)-(?P<token>.+)/$', 
+        'django.contrib.auth.views.password_reset_confirm', 
+        {'post_reset_redirect' : '/api/password/done/'}),
+    (r'^api/password/done/$', 
+        'django.contrib.auth.views.password_reset_complete'),
 )

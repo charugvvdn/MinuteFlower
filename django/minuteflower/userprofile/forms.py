@@ -4,6 +4,11 @@ from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth import authenticate, login
 from django.core import mail
 import random,string,md5
+from django.contrib.sites.models import get_current_site
+from django.template import Context, loader
+from django.utils.http import int_to_base36
+from django.contrib.auth.views import password_reset
+from django.contrib.auth.tokens import default_token_generator
 
 class ChangePasswordForm(forms.Form):
     password = forms.CharField()
@@ -24,33 +29,48 @@ class ChangePasswordForm(forms.Form):
         login(request, user)
         return request.user.is_authenticated() and (user != None)
 
-class ForgotPasswordForm(forms.Form):
-    email = forms.EmailField(max_length=255, required=True)
-    
-    def send_newpass(self, request):
-        cd = self.cleaned_data
-        
-        if cd['email']:
-            
-            profile = User.objects.get(email = cd['email'].lower())
-            s=string.lowercase+string.digits
-            new_pass = ''.join(random.sample(s,10))
-            profile.set_password(new_pass)
-            profile.save()
-	    print profile
-            if profile:
-                connection = mail.get_connection()    
-                connection.open()
-		print "yes"
-                email = mail.EmailMessage('Minuteflower:New password', 'Hi! Your new Minuteflower password is: '+str(new_pass),'admin@mailinator.com',[cd['email']],connection=connection)
-                email.content_subtype = "html"
-                print email.send(fail_silently=False)
-                connection.close()
-                return True
-            
-        else:
-            print "Error assigning the new password"
-            return False
+class PasswordResetForm(forms.Form):
+    email = forms.EmailField(label=("E-mail"), max_length=75)
+
+    def clean_email(self):
+        """
+        Validates that an active user exists with the given e-mail address.
+        """
+        email = self.cleaned_data["email"]
+        self.users_cache = User.objects.filter(
+                                email__iexact=email,
+                                is_active=True
+                            )
+        if len(self.users_cache) == 0:
+            raise forms.ValidationError(("That e-mail address doesn't have an associated user account. Are you sure you've registered?"))
+
+        return email
+
+    def save(self, domain_override=None, email_template_name='registration/password_reset_email.html',
+             use_https=False, token_generator=default_token_generator, from_email=None, request=None):
+        """
+        Generates a one-use only link for resetting password and sends to the user
+        """
+        from django.core.mail import send_mail
+        for user in self.users_cache:
+            if not domain_override:
+                current_site = get_current_site(request)
+                site_name = current_site.name
+                domain = current_site.domain
+            else:
+                site_name = domain = domain_override
+            t = loader.get_template(email_template_name)
+            c = {
+                'email': user.email,
+                'domain': "minuteflower.webfactional.com",
+                'site_name': "Minuteflower",
+                'uid': int_to_base36(user.id),
+                'user': user,
+                'token': token_generator.make_token(user),
+                'protocol': use_https and 'https' or 'http',
+            }
+            send_mail(("Password reset on Minuteflower"),
+                t.render(Context(c)), from_email, [user.email])
 class UpdateSettingsForm(forms.Form):
     salary = forms.DecimalField(decimal_places=2, max_digits=19, required=False)
     pp_email = forms.EmailField(max_length=255, required=False)
@@ -62,6 +82,7 @@ class UpdateSettingsForm(forms.Form):
 
     def save(self, request):
         cd = self.cleaned_data
+
         if not request.user.is_authenticated():
             return False
         if cd['salary']:
