@@ -48,18 +48,19 @@ class UserProfile(models.Model):
 
     def create_transactions(self):
         for give in Give.objects.filter(user=self.user):
-            dates = give.dates_to_present()
-            dates.sort()
-            for date in dates:
-                if (not give.transactioned_date) or date > give.transactioned_date:
-                    Transaction(
-                        give=give,
-                        minute_value=self.minute_value,
-                        time_start=date,
-                        cashed_in=False
-                    ).save()
-                    give.transactioned_date = date
-                    give.save()
+            if give.time_end <= datetime.datetime.utcnow():
+                dates = give.dates_to_present()
+                dates.sort()
+                for date in dates:
+                    if (not give.transactioned_date) or date > give.transactioned_date:
+                        Transaction(
+                            give=give,
+                            minute_value=self.minute_value,
+                            time_start=date,
+                            cashed_in=False
+                        ).save()
+                        give.transactioned_date = date
+                        give.save()
 
     def perform_payments(self):
         for transaction in Transaction.objects.filter(cashed_in=False, give__user=self.user):
