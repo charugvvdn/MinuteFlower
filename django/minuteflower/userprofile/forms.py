@@ -11,8 +11,8 @@ from django.contrib.auth.views import password_reset
 from django.contrib.auth.tokens import default_token_generator
 
 class ChangePasswordForm(forms.Form):
-    password = forms.CharField()
-    password2 = forms.CharField()
+    password = forms.CharField(max_length=15)
+    password2 = forms.CharField(max_length=15)
 
     def clean(self):
         cd = super(ChangePasswordForm, self).clean()

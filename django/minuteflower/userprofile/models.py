@@ -48,37 +48,35 @@ class UserProfile(models.Model):
 
     def create_transactions(self):
         for give in Give.objects.filter(user=self.user):
-            if give.time_end <= datetime.datetime.utcnow():
-                dates = give.dates_to_present()
-                dates.sort()
-                for date in dates:
-                    if (not give.transactioned_date) or date > give.transactioned_date:
-                        Transaction(
-                            give=give,
-                            minute_value=self.minute_value,
-                            time_start=date,
-                            cashed_in=False
-                        ).save()
-                        give.transactioned_date = date
-                        give.save()
+            dates = give.dates_to_present()
+            dates.sort()
+            for date in dates:
+                if (not give.transactioned_date) or date > give.transactioned_date:
+                    Transaction(
+                        give=give,
+                        minute_value=self.minute_value,
+                        time_start=date,
+                        cashed_in=False
+                    ).save()
+                    give.transactioned_date = date
+                    give.save()
 
     def perform_payments(self):
         for transaction in Transaction.objects.filter(cashed_in=False, give__user=self.user):
             give = transaction.give
-            if give.time_end <= datetime.datetime.utcnow():
-                # handle payment
-                if settings.DEBUG:
-                    print 'Payment in process: %s is paying %f to %s' % (give.user.username, give.amount_per_give(), give.charity.paypal_email)
-                pay = paypal_pay(
-                    give.amount_per_give(),
-                    give.user.get_profile().pp_preapproval_key,
-                    give.user.get_profile().pp_email,
-                    give.charity.paypal_email,
-                    'MinuteFlower donation to %s' % give.charity.name
-                )
-                if pay.get('responseEnvelope', {}).get('ack', '') == 'Success':
-                    transaction.cashed_in = True
-                    transaction.save()
+            # handle payment
+            if settings.DEBUG:
+                print 'Payment in process: %s is paying %f to %s' % (give.user.username, give.amount_per_give(), give.charity.paypal_email)
+            pay = paypal_pay(
+                give.amount_per_give(),
+                give.user.get_profile().pp_preapproval_key,
+                give.user.get_profile().pp_email,
+                give.charity.paypal_email,
+                'MinuteFlower donation to %s' % give.charity.name
+            )
+            if pay.get('responseEnvelope', {}).get('ack', '') == 'Success':
+                transaction.cashed_in = True
+                transaction.save()
 
     def update_favorite_charities(self):
         self.detail_favorite_charities = []

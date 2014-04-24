@@ -155,31 +155,36 @@ def my_gives(request):
     return JSONify(rret)
 
 def my_scheduled_gives(request):
-	return JSONify(Give.objects.filter(user=request.user, time_start__gt=datetime.datetime.utcnow()).order_by('time_start'))
+    repeat_list = ['day','month','week']
+    return JSONify(Give.objects.filter(user=request.user, repeat__in = ['day','week','month']).order_by('time_start'))
+    #return JSONify(Give.objects.filter(user=request.user, time_start__gt=datetime.datetime.utcnow()).order_by('time_start'))
 
 def time_status(request, include_previous=True):
     total_time = 0
-    if include_previous:
+    try:
+        if include_previous:
+            for give in Give.objects.filter(user=request.user):
+                total_time += len(give.dates_to_present()) * \
+                        (give.time_end - give.time_start).total_seconds()
+
+        cur_gives = []
         for give in Give.objects.filter(user=request.user):
-            total_time += len(give.dates_to_present()) * \
-                    (give.time_end - give.time_start).total_seconds()
-
-    cur_gives = []
-    for give in Give.objects.filter(user=request.user):
-        for date in give.dates_to_present():
-            end_time = date + datetime.timedelta(seconds=(give.time_end - give.time_start).total_seconds())
-            if end_time > datetime.datetime.utcnow():
-                cur_gives.append((end_time - datetime.datetime.utcnow()).total_seconds())
-                if include_previous:
-                    total_time -= (end_time - datetime.datetime.utcnow()).total_seconds()
-                else:
-                    total_time += (give.time_end - give.time_start).total_seconds() - (end_time - datetime.datetime.utcnow()).total_seconds()
+            for date in give.dates_to_present():
+                end_time = date + datetime.timedelta(seconds=(give.time_end - give.time_start).total_seconds())
+                if end_time > datetime.datetime.utcnow():
+                    cur_gives.append((end_time - datetime.datetime.utcnow()).total_seconds())
+                    if include_previous:
+                        total_time -= (end_time - datetime.datetime.utcnow()).total_seconds()
+                    else:
+                        total_time += (give.time_end - give.time_start).total_seconds() - (end_time - datetime.datetime.utcnow()).total_seconds()
 
 
-    return JSONify({
-        'seconds':  '%.2d' % (total_time % 60),
-        'minutes':  '%.2d' % (((total_time - (total_time % 60)) / 60) % 60),
-        'hours':    '%.2d' % ((total_time - (total_time % (60*60))) / (60*60)),
-        'cur_gives': cur_gives,
-        'total_time': total_time,
-    })
+        return JSONify({
+            'seconds':  '%.2d' % (total_time % 60),
+            'minutes':  '%.2d' % (((total_time - (total_time % 60)) / 60) % 60),
+            'hours':    '%.2d' % ((total_time - (total_time % (60*60))) / (60*60)),
+            'cur_gives': cur_gives,
+            'total_time': total_time,
+        })
+    except Exception, e:
+        return JSONify({'error':str(e)})
